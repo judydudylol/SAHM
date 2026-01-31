@@ -185,6 +185,10 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# Additional UI Styling
+st.markdown(
+    """
+<style>
 /* Decision Banners - COMPRESSED */
 .decision-banner {
   text-align: center;
