@@ -67,7 +67,7 @@ header[data-testid="stHeader"] {
 
 /* Ensure Streamlit's top-right menu buttons stay visible above our header */
 [data-testid="stToolbar"] {
-    z-index: 10000 !important;
+    z-index: 999999 !important;
     position: fixed !important;
     top: 0.4rem !important;
     right: 1.2rem !important;
@@ -80,7 +80,7 @@ header[data-testid="stHeader"] {
     top: 0;
     left: 0;
     width: 100vw;
-    z-index: 9999;
+    z-index: 1;
     background: linear-gradient(90deg, #0f172a 0%, #1e293b 100%);
     padding: 0.4rem 1.2rem;
     height: 3.5rem;
