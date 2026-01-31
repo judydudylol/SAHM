@@ -71,6 +71,43 @@ header[data-testid="stHeader"] {
     justify-content: space-between !important;
 }
 
+/* Branding container */
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.header-brand {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -0.5px;
+}
+.header-divider {
+    height: 16px;
+    width: 1px;
+    background: rgba(255,255,255,0.2);
+}
+.header-title {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.8);
+    font-weight: 400;
+}
+.header-badge {
+    font-size: 0.75rem;
+    color: #10b981;
+    font-weight: 600;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 2px 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+.header-arabic {
+    font-size: 1rem;
+    font-weight: 700;
+    color: white;
+}
+
 /* Adjust main container */
 .block-container { 
     padding-top: 3.5rem !important; 
@@ -489,17 +526,283 @@ def render_header():
     font-weight: 700;
     color: white;
 }
+
+/* Decision Banners - COMPRESSED */
+.decision-banner {
+  text-align: center;
+  padding: 18px 24px;
+  border-radius: 10px;
+  margin: 16px 0;
+  border: 2px solid;
+}
+
+.decision-banner.drone {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-color: #34d399;
+  color: white;
+}
+
+.decision-banner.ambulance {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  border-color: #fbbf24;
+  color: white;
+}
+
+.decision-banner.both {
+  background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+  border-color: #a78bfa;
+  color: white;
+}
+
+.decision-banner h1 {
+  margin: 6px 0 4px 0;
+  font-size: 1.8rem;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+
+.decision-banner p {
+  font-size: 0.9rem;
+  margin: 4px 0;
+}
+
+/* Rule Checklist */
+.rule-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px;
+  margin: 5px 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-left: 3px solid;
+}
+
+.rule-item.pass { border-left-color: #10b981; background: rgba(16, 185, 129, 0.05); }
+.rule-item.fail { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.05); }
+.rule-item.trigger { border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.05); }
+
+.rule-icon {
+  font-size: 1.3rem;
+  min-width: 26px;
+  text-align: center;
+}
+
+/* Mission Profile */
+.profile-section {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 14px;
+  margin: 12px 0;
+}
+
+.profile-header {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  opacity: 0.7;
+  margin-bottom: 6px;
+}
+
+.profile-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #10b981;
+  margin-bottom: 4px;
+}
+
+.loadout-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  margin: 3px 0;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 5px;
+  border-left: 3px solid #3b82f6;
+  font-size: 0.85rem;
+}
+
+/* Match Score Progress Bars - HORIZONTAL */
+.match-progress-container {
+  margin: 8px 0;
+}
+
+.match-progress-item {
+  margin: 6px 0;
+}
+
+.match-progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  margin-bottom: 3px;
+  opacity: 0.9;
+}
+
+.match-progress-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.match-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #34d399);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+/* Metrics */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.metric-box {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+}
+
+.metric-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  opacity: 0.6;
+  margin-bottom: 4px;
+}
+
+.metric-value {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #3b82f6;
+}
+
+/* Comparison */
+.comparison-card {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 14px;
+  border-radius: 10px;
+  margin: 16px 0;
+  border: 2px solid;
+}
+
+.comparison-card.match {
+  background: rgba(16, 185, 129, 0.05);
+  border-color: #10b981;
+}
+
+.comparison-card.mismatch {
+  background: rgba(239, 68, 68, 0.05);
+  border-color: #ef4444;
+}
+
+.comparison-label {
+  font-size: 0.7rem;
+  opacity: 0.7;
+  margin-bottom: 3px;
+}
+
+.comparison-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 5px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.badge-critical { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid #ef4444; }
+.badge-high { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border: 1px solid #f59e0b; }
+.badge-success { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid #10b981; }
+
+/* Voice Stress Indicator */
+.stress-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.stress-low { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid #10b981; }
+.stress-medium { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid #f59e0b; }
+.stress-high { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; }
+
+/* Cards */
+.info-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin: 10px 0;
+}
+
+/* Section Spacing - IMPROVED */
+.section-spacer {
+  height: 24px;
+}
+
+/* Utilities */
+hr { border: none; border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 24px 0; }
+.muted { opacity: 0.7; font-size: 0.9rem; }
+
+/* Compact symptom tags */
+.symptom-tag {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  padding: 3px 8px;
+  border-radius: 12px;
+  margin: 2px 4px 2px 0;
+  display: inline-block;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  font-size: 0.8em;
+}
 </style>
-<div class="header-content">
-  <div class="header-brand">SAHM</div>
-  <div class="header-divider"></div>
-  <div class="header-title">Smart Aerial Human-Medic</div>
-  <div class="header-badge">LIVE SYSTEM</div>
-  <div class="header-arabic">سهم</div>
-</div>
 """,
-        unsafe_allow_html=True,
-    )
+    unsafe_allow_html=True,
+)
+
+# Inject branding into header
+st.markdown(
+    """
+<script>
+setTimeout(function() {
+    const header = document.querySelector('header[data-testid="stHeader"]');
+    if (header && !header.querySelector('.header-content')) {
+        const branding = document.createElement('div');
+        branding.className = 'header-content';
+        branding.innerHTML = `
+            <div class="header-brand">SAHM</div>
+            <div class="header-divider"></div>
+            <div class="header-title">Smart Aerial Human-Medic</div>
+            <div class="header-badge">LIVE SYSTEM</div>
+            <div class="header-arabic">سهم</div>
+        `;
+        header.insertBefore(branding, header.firstChild);
+    }
+}, 100);
+</script>
+""",
+    unsafe_allow_html=True,
+)
 
 def render_rule_checklist(result: DispatchResult):
     """Visual rule evaluation"""
