@@ -59,13 +59,18 @@ header[data-testid="stHeader"] {
     height: 3.5rem !important;
 }
 
+/* Hide Streamlit default header completely */
+header[data-testid="stHeader"] {
+    display: none !important;
+}
+
 /* Adjust main container for fixed header */
 .block-container { 
     padding-top: 4.5rem !important; 
     max-width: 1400px; 
 }
 
-/* Ensure Streamlit's top-right menu buttons stay visible above our header */
+/* Position toolbar absolutely at top right, outside document flow */
 [data-testid="stToolbar"] {
     position: fixed !important;
     top: 0.5rem !important;
@@ -74,6 +79,7 @@ header[data-testid="stHeader"] {
     pointer-events: auto !important;
     margin: 0 !important;
     padding: 0 !important;
+    background: transparent !important;
 }
 
 /* Custom Fixed Header */
