@@ -59,51 +59,22 @@ header[data-testid="stHeader"] {
     height: 3.5rem !important;
 }
 
-/* Make Streamlit header transparent but visible for toolbar */
+/* Simple, clean header styling */
 header[data-testid="stHeader"] {
-    background: transparent !important;
-    border: none !important;
-    height: auto !important;
-    padding: 0 !important;
-    z-index: 1 !important;
-}
-
-/* Adjust main container for fixed header */
-.block-container { 
-    padding-top: 4.5rem !important; 
-    max-width: 1400px; 
-}
-
-/* Position toolbar absolutely at top right, ON TOP of header */
-[data-testid="stToolbar"] {
-    position: absolute !important;
-    top: 0.4rem !important;
-    right: 0.8rem !important;
-    z-index: 999999 !important;
-    pointer-events: auto !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    background: transparent !important;
+    background: linear-gradient(90deg, #0f172a 0%, #1e293b 100%) !important;
+    border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+    padding: 0.4rem 1.2rem !important;
+    height: 3.5rem !important;
     display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+    align-items: center !important;
+    justify-content: space-between !important;
 }
 
-/* Custom Fixed Header */
-.fixed-toolbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    z-index: 1;
-    background: linear-gradient(90deg, #0f172a 0%, #1e293b 100%);
-    padding: 0.4rem 1.2rem;
-    height: 3.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+/* Adjust main container */
+.block-container { 
+    padding-top: 3.5rem !important; 
+    max-width: 1400px; 
 }
 
 /* Decision Banners - COMPRESSED */
@@ -482,18 +453,51 @@ def get_mission_profile(category: str, severity: int) -> Dict[str, Any]:
 def render_header():
     st.markdown(
         """
-<div class="fixed-toolbar">
-  <div style="display: flex; align-items: center; gap: 12px;">
-    <div style="font-size: 1.1rem; font-weight: 700; color: white; letter-spacing: -0.5px;">SAHM</div>
-    <div style="height: 16px; width: 1px; background: rgba(255,255,255,0.2);"></div>
-    <div style="font-size: 0.85rem; color: rgba(255,255,255,0.8); font-weight: 400;">
-      Smart Aerial Human-Medic <span style="opacity: 0.5; margin: 0 4px;">|</span> Al Ghadir Dispatch Center
-    </div>
-  </div>
-  <div style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
-    <div style="font-size: 0.75rem; color: #10b981; font-weight: 600; background: rgba(16, 185, 129, 0.1); padding: 2px 8px; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2);">LIVE SYSTEM</div>
-    <div style="font-size: 1rem; font-weight: 700; color: white;">سهم</div>
-  </div>
+<style>
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.header-brand {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -0.5px;
+}
+.header-divider {
+    height: 16px;
+    width: 1px;
+    background: rgba(255,255,255,0.2);
+}
+.header-title {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.8);
+    font-weight: 400;
+}
+.header-badge {
+    font-size: 0.75rem;
+    color: #10b981;
+    font-weight: 600;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 2px 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+.header-arabic {
+    font-size: 1rem;
+    font-weight: 700;
+    color: white;
+}
+</style>
+<div class="header-content">
+  <div class="header-brand">SAHM</div>
+  <div class="header-divider"></div>
+  <div class="header-title">Smart Aerial Human-Medic | Al Ghadir Dispatch Center</div>
+</div>
+<div class="header-content" style="gap: 6px; white-space: nowrap;">
+  <div class="header-badge">LIVE SYSTEM</div>
+  <div class="header-arabic">سهم</div>
 </div>
 """,
         unsafe_allow_html=True,
