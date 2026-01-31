@@ -76,7 +76,7 @@ header[data-testid="stHeader"] {
     position: fixed;
     top: 0;
     left: 0;
-    right: 100px;
+    width: 100vw;
     z-index: 999998;
     background: linear-gradient(90deg, #0f172a 0%, #1e293b 100%);
     padding: 0.4rem 1.2rem;
@@ -465,7 +465,7 @@ def render_header():
     st.markdown(
         """
 <div class="fixed-toolbar">
-  <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding-right: 120px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-right: 120px;">
     <div style="display: flex; align-items: center; gap: 12px;">
       <div style="font-size: 1.1rem; font-weight: 700; color: white; letter-spacing: -0.5px;">SAHM</div>
       <div style="height: 16px; width: 1px; background: rgba(255,255,255,0.2);"></div>
