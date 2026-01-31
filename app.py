@@ -1350,7 +1350,7 @@ def render_triage_tab(data: Dict[str, Any]):
                         env_context={"weather": weather, "ground_eta": ground, "air_eta": air}
                     )
                     
-                    if ai_result:
+                    if ai_result and ai_result.get("success") is not False:
                         st.session_state.ai_transcription = ai_result.get("transcription", "")
                         st.session_state.ai_symptoms = ai_result.get("symptoms", [])
                         st.session_state.ai_stress = float(ai_result.get("voiceStressScore", 0.5))
@@ -1366,6 +1366,8 @@ def render_triage_tab(data: Dict[str, Any]):
                         
                         st.success(f"AI Analysis Complete: {ai_result.get('callerIntent', 'Emergency analyzed')}")
                         st.rerun()
+                    elif ai_result and ai_result.get("error"):
+                        st.error(f"❌ AI Analysis Error:\n\n{ai_result.get('error')}\n\nPlease try again or enter symptoms manually.")
                     else:
                         st.error("AI analysis failed. Please try again or enter symptoms manually.")
         

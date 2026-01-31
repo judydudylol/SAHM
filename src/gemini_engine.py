@@ -422,8 +422,10 @@ def analyze_audio_call(
         }
         
     except Exception as e:
-        print(f"AI Engine Error: {e}")
-        return None
+        error_msg = f"AI Engine Error: {str(e)}"
+        print(error_msg)
+        # Return error info so it can be displayed to user
+        return {"error": error_msg, "success": False}
 
 
 def is_gemini_available() -> bool:
