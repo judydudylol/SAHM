@@ -67,7 +67,7 @@ header[data-testid="stHeader"] {
 
 /* Ensure Streamlit's top-right menu buttons stay visible above our header */
 [data-testid="stToolbar"] {
-    z-index: 1000001 !important;
+    z-index: 1000002 !important;
     position: relative !important;
 }
 
