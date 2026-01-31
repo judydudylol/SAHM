@@ -49,50 +49,53 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Professional CSS with improved spacing
+# Custom Fixed Header
 st.markdown(
     """
 <style>
-/* Hide default header but keep toolbar accessible */
-header[data-testid="stHeader"] {
-    background: transparent !important;
-    height: 3.5rem !important;
+/* Fixed header at top */
+.custom-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3.5rem;
+    background: linear-gradient(90deg, #0f172a 0%, #1e293b 100%);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.2rem;
 }
 
-/* Simple, clean header styling */
-header[data-testid="stHeader"] {
-    background: linear-gradient(90deg, #0f172a 0%, #1e293b 100%) !important;
-    border-bottom: 1px solid rgba(255,255,255,0.1) !important;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
-    padding: 0.4rem 1.2rem !important;
-    height: 3.5rem !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-}
-
-/* Branding container */
-.header-content {
+/* Left side - Branding */
+.header-left {
     display: flex;
     align-items: center;
     gap: 12px;
 }
+
 .header-brand {
     font-size: 1.1rem;
     font-weight: 700;
     color: white;
     letter-spacing: -0.5px;
 }
+
 .header-divider {
     height: 16px;
     width: 1px;
     background: rgba(255,255,255,0.2);
 }
+
 .header-title {
     font-size: 0.85rem;
     color: rgba(255,255,255,0.8);
     font-weight: 400;
 }
+
 .header-badge {
     font-size: 0.75rem;
     color: #10b981;
@@ -102,15 +105,41 @@ header[data-testid="stHeader"] {
     border-radius: 12px;
     border: 1px solid rgba(16, 185, 129, 0.2);
 }
+
 .header-arabic {
     font-size: 1rem;
     font-weight: 700;
     color: white;
 }
 
-/* Adjust main container */
+/* Right side - Icons */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.header-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: rgba(255,255,255,0.8);
+    font-size: 1.2rem;
+    transition: all 0.2s ease;
+    border-radius: 6px;
+}
+
+.header-icon:hover {
+    color: white;
+    background: rgba(255,255,255,0.1);
+}
+
+/* Adjust main container to account for fixed header */
 .block-container { 
-    padding-top: 3.5rem !important; 
+    padding-top: 4.5rem !important; 
     max-width: 1400px; 
 }
 
@@ -780,26 +809,37 @@ hr { border: none; border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 24px 
     unsafe_allow_html=True,
 )
 
-# Inject branding into header
+# Render fixed header with branding and icons
 st.markdown(
     """
-<script>
-setTimeout(function() {
-    const header = document.querySelector('header[data-testid="stHeader"]');
-    if (header && !header.querySelector('.header-content')) {
-        const branding = document.createElement('div');
-        branding.className = 'header-content';
-        branding.innerHTML = `
-            <div class="header-brand">SAHM</div>
-            <div class="header-divider"></div>
-            <div class="header-title">Smart Aerial Human-Medic</div>
-            <div class="header-badge">LIVE SYSTEM</div>
-            <div class="header-arabic">سهم</div>
-        `;
-        header.insertBefore(branding, header.firstChild);
-    }
-}, 100);
-</script>
+<div class="custom-header">
+    <div class="header-left">
+        <div class="header-brand">SAHM</div>
+        <div class="header-divider"></div>
+        <div class="header-title">Smart Aerial Human-Medic</div>
+        <div class="header-badge">LIVE SYSTEM</div>
+        <div class="header-arabic">سهم</div>
+    </div>
+    <div class="header-right">
+        <a href="https://github.com/judydudylol/ai-triage-streamlit" target="_blank" class="header-icon" title="GitHub Repository">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+            </svg>
+        </a>
+        <div class="header-icon" title="User Profile">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+        </div>
+        <div class="header-icon" title="Settings">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m5.08 5.08l4.24 4.24M1 12h6m6 0h6m-16.78 7.78l4.24-4.24m5.08-5.08l4.24-4.24"></path>
+            </svg>
+        </div>
+    </div>
+</div>
 """,
     unsafe_allow_html=True,
 )
