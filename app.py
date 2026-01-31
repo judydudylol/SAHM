@@ -49,146 +49,34 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Custom Fixed Header with CSS and HTML combined
+# Professional CSS with improved spacing
 st.markdown(
     """
 <style>
-/* Fixed header at top - HIGHEST PRIORITY */
-.custom-header {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
+/* Hide default header but keep toolbar accessible */
+header[data-testid="stHeader"] {
+    background: transparent !important;
     height: 3.5rem !important;
+}
+
+/* Simple, clean header styling */
+header[data-testid="stHeader"] {
     background: linear-gradient(90deg, #0f172a 0%, #1e293b 100%) !important;
     border-bottom: 1px solid rgba(255,255,255,0.1) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
-    z-index: 99999 !important;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+    padding: 0.4rem 1.2rem !important;
+    height: 3.5rem !important;
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
-    padding: 0 1.2rem !important;
 }
 
-/* Left side - Branding */
-.header-left {
-    display: flex !important;
-    align-items: center !important;
-    gap: 12px !important;
-}
-
-.header-brand {
-    font-size: 1.1rem !important;
-    font-weight: 700 !important;
-    color: white !important;
-    letter-spacing: -0.5px !important;
-}
-
-.header-divider {
-    height: 16px !important;
-    width: 1px !important;
-    background: rgba(255,255,255,0.2) !important;
-}
-
-.header-title {
-    font-size: 0.85rem !important;
-    color: rgba(255,255,255,0.8) !important;
-    font-weight: 400 !important;
-}
-
-.header-badge {
-    font-size: 0.75rem !important;
-    color: #10b981 !important;
-    font-weight: 600 !important;
-    background: rgba(16, 185, 129, 0.1) !important;
-    padding: 2px 8px !important;
-    border-radius: 12px !important;
-    border: 1px solid rgba(16, 185, 129, 0.2) !important;
-}
-
-.header-arabic {
-    font-size: 1rem !important;
-    font-weight: 700 !important;
-    color: white !important;
-}
-
-/* Right side - Icons */
-.header-right {
-    display: flex !important;
-    align-items: center !important;
-    gap: 16px !important;
-}
-
-.header-icon {
-    width: 32px !important;
-    height: 32px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    cursor: pointer !important;
-    color: rgba(255,255,255,0.8) !important;
-    font-size: 1.2rem !important;
-    transition: all 0.2s ease !important;
-    border-radius: 6px !important;
-    background: transparent !important;
-}
-
-.header-icon:hover {
-    color: white !important;
-    background: rgba(255,255,255,0.1) !important;
-}
-
-.header-icon a {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 100% !important;
-    height: 100% !important;
-}
-
-/* Adjust main container to account for fixed header */
+/* Adjust main container */
 .block-container { 
-    padding-top: 4.5rem !important; 
-    max-width: 1400px !important;
+    padding-top: 3.5rem !important; 
+    max-width: 1400px; 
 }
-</style>
 
-<div class="custom-header">
-    <div class="header-left">
-        <div class="header-brand">SAHM</div>
-        <div class="header-divider"></div>
-        <div class="header-title">Smart Aerial Human-Medic</div>
-        <div class="header-badge">LIVE SYSTEM</div>
-        <div class="header-arabic">سهم</div>
-    </div>
-    <div class="header-right">
-        <a href="https://github.com/judydudylol/ai-triage-streamlit" target="_blank" class="header-icon" title="GitHub Repository">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
-            </svg>
-        </a>
-        <div class="header-icon" title="User Profile">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-        </div>
-        <div class="header-icon" title="Settings">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m5.08 5.08l4.24 4.24M1 12h6m6 0h6m-16.78 7.78l4.24-4.24m5.08-5.08l4.24-4.24"></path>
-            </svg>
-        </div>
-    </div>
-</div>
-""",
-    unsafe_allow_html=True,
-)
-
-# Additional UI Styling
-st.markdown(
-    """
-<style>
 /* Decision Banners - COMPRESSED */
 .decision-banner {
   text-align: center;
@@ -601,288 +489,28 @@ def render_header():
     font-weight: 700;
     color: white;
 }
-
-/* Decision Banners - COMPRESSED */
-.decision-banner {
-  text-align: center;
-  padding: 18px 24px;
-  border-radius: 10px;
-  margin: 16px 0;
-  border: 2px solid;
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
-
-.decision-banner.drone {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  border-color: #34d399;
-  color: white;
-}
-
-.decision-banner.ambulance {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  border-color: #fbbf24;
-  color: white;
-}
-
-.decision-banner.both {
-  background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
-  border-color: #a78bfa;
-  color: white;
-}
-
-.decision-banner h1 {
-  margin: 6px 0 4px 0;
-  font-size: 1.8rem;
-  font-weight: 900;
-  letter-spacing: 0.5px;
-}
-
-.decision-banner p {
-  font-size: 0.9rem;
-  margin: 4px 0;
-}
-
-/* Rule Checklist */
-.rule-item {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 10px 12px;
-  margin: 5px 0;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  border-left: 3px solid;
-}
-
-.rule-item.pass { border-left-color: #10b981; background: rgba(16, 185, 129, 0.05); }
-.rule-item.fail { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.05); }
-.rule-item.trigger { border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.05); }
-
-.rule-icon {
-  font-size: 1.3rem;
-  min-width: 26px;
-  text-align: center;
-}
-
-/* Mission Profile */
-.profile-section {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  padding: 14px;
-  margin: 12px 0;
-}
-
-.profile-header {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 1.2px;
-  opacity: 0.7;
-  margin-bottom: 6px;
-}
-
-.profile-value {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #10b981;
-  margin-bottom: 4px;
-}
-
-.loadout-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 10px;
-  margin: 3px 0;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 5px;
-  border-left: 3px solid #3b82f6;
-  font-size: 0.85rem;
-}
-
-/* Match Score Progress Bars - HORIZONTAL */
-.match-progress-container {
-  margin: 8px 0;
-}
-
-.match-progress-item {
-  margin: 6px 0;
-}
-
-.match-progress-label {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.8rem;
-  margin-bottom: 3px;
-  opacity: 0.9;
-}
-
-.match-progress-bar {
-  height: 6px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.match-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #10b981, #34d399);
-  border-radius: 3px;
-  transition: width 0.3s ease;
-}
-
-/* Metrics */
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 10px;
-  margin: 16px 0;
-}
-
-.metric-box {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 10px;
-  text-align: center;
-}
-
-.metric-label {
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  opacity: 0.6;
-  margin-bottom: 4px;
-}
-
-.metric-value {
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: #3b82f6;
-}
-
-/* Comparison */
-.comparison-card {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  padding: 14px;
-  border-radius: 10px;
-  margin: 16px 0;
-  border: 2px solid;
-}
-
-.comparison-card.match {
-  background: rgba(16, 185, 129, 0.05);
-  border-color: #10b981;
-}
-
-.comparison-card.mismatch {
-  background: rgba(239, 68, 68, 0.05);
-  border-color: #ef4444;
-}
-
-.comparison-label {
-  font-size: 0.7rem;
-  opacity: 0.7;
-  margin-bottom: 3px;
-}
-
-.comparison-value {
-  font-size: 1.05rem;
-  font-weight: 700;
-}
-
-/* Badges */
-.badge {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 5px;
-  font-weight: 700;
-  font-size: 0.75rem;
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
-}
-
-.badge-critical { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid #ef4444; }
-.badge-high { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border: 1px solid #f59e0b; }
-.badge-success { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid #10b981; }
-
-/* Voice Stress Indicator */
-.stress-badge {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-weight: 600;
-  font-size: 0.75rem;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-.stress-low { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid #10b981; }
-.stress-medium { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid #f59e0b; }
-.stress-high { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; }
-
-/* Cards */
-.info-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  padding: 12px 14px;
-  margin: 10px 0;
-}
-
-/* Section Spacing - IMPROVED */
-.section-spacer {
-  height: 24px;
-}
-
-/* Utilities */
-hr { border: none; border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 24px 0; }
-.muted { opacity: 0.7; font-size: 0.9rem; }
-
-/* Compact symptom tags */
-.symptom-tag {
-  background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
-  padding: 3px 8px;
-  border-radius: 12px;
-  margin: 2px 4px 2px 0;
-  display: inline-block;
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  font-size: 0.8em;
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
 }
 </style>
-
-<div class="custom-header">
-    <div class="header-left">
-        <div class="header-brand">SAHM</div>
-        <div class="header-divider"></div>
-        <div class="header-title">Smart Aerial Human-Medic</div>
-        <div class="header-badge">LIVE SYSTEM</div>
-        <div class="header-arabic">سهم</div>
-    </div>
-    <div class="header-right">
-        <a href="https://github.com/judydudylol/ai-triage-streamlit" target="_blank" class="header-icon" title="GitHub Repository">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
-            </svg>
-        </a>
-        <div class="header-icon" title="User Profile">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-        </div>
-        <div class="header-icon" title="Settings">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m5.08 5.08l4.24 4.24M1 12h6m6 0h6m-16.78 7.78l4.24-4.24m5.08-5.08l4.24-4.24"></path>
-            </svg>
-        </div>
-    </div>
+<div class="header-left">
+  <div class="header-brand">SAHM</div>
+  <div class="header-divider"></div>
+  <div class="header-title">Smart Aerial Human-Medic</div>
+  <div class="header-badge">LIVE SYSTEM</div>
+  <div class="header-arabic">سهم</div>
 </div>
 """,
-    unsafe_allow_html=True,
-)
+        unsafe_allow_html=True,
+    )
 
 def render_rule_checklist(result: DispatchResult):
     """Visual rule evaluation"""
