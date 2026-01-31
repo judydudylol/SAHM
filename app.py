@@ -465,7 +465,7 @@ def render_header():
     st.markdown(
         """
 <div class="fixed-toolbar">
-  <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+  <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding-right: 120px;">
     <div style="display: flex; align-items: center; gap: 12px;">
       <div style="font-size: 1.1rem; font-weight: 700; color: white; letter-spacing: -0.5px;">SAHM</div>
       <div style="height: 16px; width: 1px; background: rgba(255,255,255,0.2);"></div>
@@ -473,9 +473,9 @@ def render_header():
         Smart Aerial Human-Medic <span style="opacity: 0.5; margin: 0 4px;">|</span> Al Ghadir Dispatch Center
       </div>
     </div>
-    <div style="display: flex; align-items: center; gap: 10px;">
+    <div style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
       <div style="font-size: 0.75rem; color: #10b981; font-weight: 600; background: rgba(16, 185, 129, 0.1); padding: 2px 8px; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2);">LIVE SYSTEM</div>
-      <div style="font-size: 1.1rem; font-weight: 700; color: white;">سهم</div>
+      <div style="font-size: 1rem; font-weight: 700; color: white;">سهم</div>
     </div>
   </div>
 </div>
