@@ -454,28 +454,43 @@ def render_header():
     st.markdown(
         """
 <style>
-.header-content {
+.branding-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3.5rem;
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
     display: flex;
     align-items: center;
     gap: 12px;
+    padding: 0 1.2rem;
+    z-index: 999999;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
 }
-.header-brand {
+
+.branding-brand {
     font-size: 1.1rem;
     font-weight: 700;
     color: white;
     letter-spacing: -0.5px;
 }
-.header-divider {
+
+.branding-divider {
     height: 16px;
     width: 1px;
     background: rgba(255,255,255,0.2);
 }
-.header-title {
+
+.branding-title {
     font-size: 0.85rem;
     color: rgba(255,255,255,0.8);
     font-weight: 400;
 }
-.header-badge {
+
+.branding-badge {
     font-size: 0.75rem;
     color: #10b981;
     font-weight: 600;
@@ -484,29 +499,19 @@ def render_header():
     border-radius: 12px;
     border: 1px solid rgba(16, 185, 129, 0.2);
 }
-.header-arabic {
+
+.branding-arabic {
     font-size: 1rem;
     font-weight: 700;
     color: white;
 }
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
-}
 </style>
-<div class="header-left">
-  <div class="header-brand">SAHM</div>
-  <div class="header-divider"></div>
-  <div class="header-title">Smart Aerial Human-Medic</div>
-  <div class="header-badge">LIVE SYSTEM</div>
-  <div class="header-arabic">سهم</div>
+<div class="branding-container">
+  <div class="branding-brand">SAHM</div>
+  <div class="branding-divider"></div>
+  <div class="branding-title">Smart Aerial Human-Medic</div>
+  <div class="branding-badge">LIVE SYSTEM</div>
+  <div class="branding-arabic">سهم</div>
 </div>
 """,
         unsafe_allow_html=True,
