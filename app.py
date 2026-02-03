@@ -602,6 +602,27 @@ def render_rule_checklist(result: DispatchResult):
   """,
       unsafe_allow_html=True,
     )
+def render_decision_banner(result):
+    if result.response_mode == "BOTH":
+        st.markdown(
+            f"""
+<div class="decision-banner both">
+  <h1>SIMULTANEOUS RESPONSE</h1>
+  <p>CRITICAL: Drone (Immediate Aid) + Ambulance (Transport)</p>
+  <div style="margin-top: 10px;">
+    <span class="badge badge-success">{result.rule_triggered}</span>
+    <span class="badge badge-success" style="margin-left: 8px;">Confidence: {result.confidence*100:.0f}%</span>
+  </div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+        # Drone Payload display (for BOTH)
+        case_name = getattr(result, 'case_name', None) or getattr(result, 'emergency_case', None) or ''
+        tools = MEDIC_TOOLS.get(case_name, MEDIC_TOOLS.get('General'))
+        st.markdown('#### 📦 Drone Payload')
+        for tool in tools:
+            st.success(tool)
     elif result.response_mode == "DOCTOR_DRONE":
         st.markdown(
             f"""
