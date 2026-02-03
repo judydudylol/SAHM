@@ -461,24 +461,78 @@ def get_mission_profile(category: str, severity: int) -> Dict[str, Any]:
 
 def render_header():
     st.markdown(
-        """
-<div class="fixed-toolbar">
-  <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-    <div style="display: flex; align-items: center; gap: 12px;">
-      <div style="font-size: 1.1rem; font-weight: 700; color: white; letter-spacing: -0.5px;">SAHM</div>
-      <div style="height: 16px; width: 1px; background: rgba(255,255,255,0.2);"></div>
-      <div style="font-size: 0.85rem; color: rgba(255,255,255,0.8); font-weight: 400;">
-        Smart Aerial Human-Medic <span style="opacity: 0.5; margin: 0 4px;">|</span> Al Ghadir Dispatch Center
-      </div>
-    </div>
-    <div style="display: flex; align-items: center; gap: 10px;">
-      <div style="font-size: 0.75rem; color: #10b981; font-weight: 600; background: rgba(16, 185, 129, 0.1); padding: 2px 8px; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2);">LIVE SYSTEM</div>
-      <div style="font-size: 1.1rem; font-weight: 700; color: white;">سهم</div>
+      """
+  <style>
+    .main .block-container { padding-top: 80px !important; }
+    .sahm-menu {
+      display: flex;
+      gap: 28px;
+      margin-left: 32px;
+    }
+    .sahm-menu-item {
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 500;
+      text-decoration: none;
+      opacity: 0.85;
+      transition: opacity 0.2s;
+      cursor: pointer;
+    }
+    .sahm-menu-item:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+  </style>
+
+  <div style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 60px;
+    z-index: 999999;
+    background-color: #0e1117;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    box-sizing: border-box;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  ">
+    <div style="display: flex; align-items: center; gap: 16px; width: 100%;">
+      <span style="font-size: 1.1rem; font-weight: 700; color: white;">SAHM | Smart Aerial Human-Medic</span>
+      <nav class="sahm-menu">
+        <span class="sahm-menu-item">Home</span>
+        <span class="sahm-menu-item">AI Triage</span>
+        <span class="sahm-menu-item">Live Command</span>
+        <span class="sahm-menu-item">Scenarios</span>
+        <span class="sahm-menu-item">Test Cases</span>
+        <span class="sahm-menu-item">Data Explorer</span>
+      </nav>
+      <span style="
+        background-color: #10b981;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+        margin-left: 32px;
+      ">
+        LIVE SYSTEM
+      </span>
+      <span style="
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: white;
+        margin-left: auto;
+      ">
+        سهم
+      </span>
     </div>
   </div>
-</div>
-""",
-        unsafe_allow_html=True,
+  """,
+      unsafe_allow_html=True,
     )
 
 def render_rule_checklist(result: DispatchResult):
@@ -1298,45 +1352,39 @@ def render_triage_tab(data: Dict[str, Any]):
             st.caption("Manual input mode - AI analysis disabled")
         
         audio_val = st.audio_input("Record Emergency Call", key="triage_audio")
-        
-        if audio_val and is_gemini_available():
+        if audio_val:
+          if is_gemini_available():
             # Fix: Prevent infinite loop by checking if this audio was already processed
             audio_bytes = audio_val.read()
             # Create a simple hash of the bytes to identify changes
             import hashlib
             audio_hash = hashlib.md5(audio_bytes).hexdigest()
-            
             # Retrieve last processed hash
             last_hash = st.session_state.get("last_processed_audio_id")
-            
             if audio_hash != last_hash:
-                with st.spinner("Analyzing Audio..."):
-                    mime_type = "audio/wav"
-                    
-                    ai_result = analyze_audio_call(
-                        audio_bytes, 
-                        mime_type,
-                        env_context={"weather": weather, "ground_eta": ground, "air_eta": air}
-                    )
-                    
-                    if ai_result:
-                        st.session_state.ai_transcription = ai_result.get("transcription", "")
-                        st.session_state.ai_symptoms = ai_result.get("symptoms", [])
-                        st.session_state.ai_stress = float(ai_result.get("voiceStressScore", 0.5))
-                        st.session_state.ai_severity = ai_result.get("severityLevel", "MEDIUM")
-                        st.session_state.ai_reasoning = ai_result.get("reasoning", "")
-                        st.session_state.ai_caller_intent = ai_result.get("callerIntent", "")
-                        st.session_state.ai_medical_summary = ai_result.get("medicalSummary", "")
-                        st.session_state.ai_duration = int(ai_result.get("symptomDurationMinutes", 10))
-                        st.session_state.ai_stress_indicators = ai_result.get("voiceStressIndicators", "")
-                        
-                        # Mark as processed
-                        st.session_state.last_processed_audio_id = audio_hash
-                        
-                        st.success(f"AI Analysis Complete: {ai_result.get('callerIntent', 'Emergency analyzed')}")
-                        st.rerun()
-                    else:
-                        st.error("AI analysis failed. Please try again or enter symptoms manually.")
+              with st.spinner("Analyzing Audio..."):
+                mime_type = "audio/wav"
+                ai_result = analyze_audio_call(
+                  audio_bytes, 
+                  mime_type,
+                  env_context={"weather": weather, "ground_eta": ground, "air_eta": air}
+                )
+                if ai_result:
+                  st.session_state.ai_transcription = ai_result.get("transcription", "")
+                  st.session_state.ai_symptoms = ai_result.get("symptoms", [])
+                  st.session_state.ai_stress = float(ai_result.get("voiceStressScore", 0.5))
+                  st.session_state.ai_severity = ai_result.get("severityLevel", "MEDIUM")
+                  st.session_state.ai_reasoning = ai_result.get("reasoning", "")
+                  st.session_state.ai_caller_intent = ai_result.get("callerIntent", "")
+                  st.session_state.ai_medical_summary = ai_result.get("medicalSummary", "")
+                  st.session_state.ai_duration = int(ai_result.get("symptomDurationMinutes", 10))
+                  st.session_state.ai_stress_indicators = ai_result.get("voiceStressIndicators", "")
+                  # Mark as processed
+                  st.session_state.last_processed_audio_id = audio_hash
+                  st.success(f"AI Analysis Complete: {ai_result.get('callerIntent', 'Emergency analyzed')}")
+                  st.rerun()
+                else:
+                  st.error("AI analysis failed. Please try again or enter symptoms manually.")
         
         if st.session_state.ai_transcription:
             st.markdown(
