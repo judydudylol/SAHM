@@ -7,6 +7,7 @@ extracting transcription, voice stress, symptoms, and recommended actions.
 
 import os
 import json
+from pathlib import Path
 from typing import Optional
 
 try:
@@ -16,28 +17,55 @@ try:
 except ImportError:
     GENAI_AVAILABLE = False
 
-# Try to load .env file if python-dotenv is available
+
+DOTENV_AVAILABLE = False
+ENV_PATH = Path(__file__).resolve().parents[1] / ".env"
+
 try:
-    from dotenv import load_dotenv
-    load_dotenv()
+    from dotenv import dotenv_values, load_dotenv
+    DOTENV_AVAILABLE = True
+    if ENV_PATH.exists():
+        load_dotenv(dotenv_path=ENV_PATH, override=False)
+    else:
+        load_dotenv(override=False)
 except ImportError:
-    pass
+    dotenv_values = None
 
-# API Key handling
+
+def _normalize_env_value(value: Optional[str]) -> Optional[str]:
+    if value is None:
+        return None
+    cleaned = value.strip().strip('"').strip("'")
+    return cleaned or None
+
+
 def get_api_key():
-    return os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    for key_name in ("GEMINI_API_KEY", "GOOGLE_API_KEY"):
+        key_value = _normalize_env_value(os.environ.get(key_name))
+        if key_value:
+            return key_value
+
+    if DOTENV_AVAILABLE and ENV_PATH.exists() and dotenv_values is not None:
+        dotenv_map = dotenv_values(ENV_PATH)
+        for key_name in ("GEMINI_API_KEY", "GOOGLE_API_KEY"):
+            key_value = _normalize_env_value(dotenv_map.get(key_name))
+            if key_value:
+                os.environ[key_name] = key_value
+                return key_value
+
+    return None
 
 
-# Symptom mapping from natural language to triage_engine keys
+
 SYMPTOM_MAPPING = {
-    # Cardiac
+    
     "chest pain": "chest_pain",
     "crushing chest pain": "chest_pain_crushing",
     "chest pressure": "chest_pain",
     "heart racing": "palpitations",
     "palpitations": "palpitations",
     
-    # Respiratory
+    
     "difficulty breathing": "shortness_of_breath",
     "trouble breathing": "trouble_breathing",
     "shortness of breath": "shortness_of_breath",
@@ -46,7 +74,7 @@ SYMPTOM_MAPPING = {
     "wheezing": "wheezing",
     "turning blue": "turning_blue",
     
-    # Neuro
+    
     "unconscious": "unconscious",
     "not responding": "not_responding",
     "fainted": "fainting",
@@ -59,14 +87,14 @@ SYMPTOM_MAPPING = {
     "arm weakness": "arm_weakness",
     "stroke": "stroke_signs",
     
-    # Trauma/Bleeding
+    
     "bleeding": "moderate_bleeding",
     "heavy bleeding": "heavy_bleeding",
     "severe bleeding": "severe_bleeding",
     "head injury": "head_injury",
     "trauma": "major_trauma",
     
-    # Allergic
+    
     "allergic reaction": "anaphylaxis_signs",
     "anaphylaxis": "anaphylaxis_signs",
     "swelling": "swelling_face_lips",
@@ -75,18 +103,18 @@ SYMPTOM_MAPPING = {
     "hives": "rash",
     "rash": "rash",
     
-    # Infection/Fever
+    
     "fever": "fever",
     "high fever": "high_fever",
     "chills": "chills",
     
-    # GI
+    
     "vomiting": "vomiting",
     "nausea": "nausea",
     "diarrhea": "diarrhea",
     "dehydration": "dehydration",
     
-    # Other
+    
     "headache": "headache",
     "pain": "mild_pain",
     "panic": "panic",
@@ -94,7 +122,7 @@ SYMPTOM_MAPPING = {
 }
 
 
-# System instruction for Gemini
+
 SYSTEM_INSTRUCTION = """
 You are an expert Emergency Medical Dispatcher AI specializing in audio triage analysis.
 Your role is to perform rigorous, clinical-grade analysis of emergency audio calls.
@@ -229,18 +257,18 @@ def map_symptom_to_key(symptom_text: str) -> Optional[str]:
     """
     symptom_lower = symptom_text.lower().strip()
     
-    # Direct match
+    
     if symptom_lower in SYMPTOM_MAPPING:
         return SYMPTOM_MAPPING[symptom_lower]
     
-    # Partial match - check if any mapping key is contained in the symptom
+    
     for phrase, key in SYMPTOM_MAPPING.items():
         if phrase in symptom_lower or symptom_lower in phrase:
             return key
     
-    # Try underscore format (e.g., "chest_pain" -> "chest_pain")
+    
     underscore_version = symptom_lower.replace(" ", "_")
-    # Import here to avoid circular imports
+    
     from src.triage_engine import SYMPTOM_POINTS
     if underscore_version in SYMPTOM_POINTS:
         return underscore_version
@@ -275,6 +303,7 @@ def analyze_audio_call(
     
     Returns:
         Dictionary with analysis results:
+        - success: bool
         - voiceStressScore: float (0.0-1.0)
         - transcription: str
         - medicalSummary: str
@@ -285,21 +314,23 @@ def analyze_audio_call(
         - callerIntent: str
         - reasoning: str
         
-        Returns None if analysis fails.
+        On failure, returns: {"success": False, "error": "..."}.
     """
     if not GENAI_AVAILABLE:
-        print("Error: google-genai package not installed")
-        return None
+        error_msg = "Error: google-genai package not installed"
+        print(error_msg)
+        return {"error": error_msg, "success": False}
     
     api_key = get_api_key()
     if not api_key:
-        print("Error: GEMINI_API_KEY or GOOGLE_API_KEY not found in environment")
-        return None
+        error_msg = "Error: GEMINI_API_KEY or GOOGLE_API_KEY not found in environment"
+        print(error_msg)
+        return {"error": error_msg, "success": False}
     
     try:
         client = genai.Client(api_key=api_key)
         
-        # Define the structured output schema
+        
         response_schema = {
             "type": "OBJECT",
             "properties": {
@@ -358,7 +389,7 @@ def analyze_audio_call(
             ]
         }
         
-        # Prepare context string
+        
         context_str = ""
         if env_context:
             context_str = f"""
@@ -368,8 +399,8 @@ def analyze_audio_call(
 - Air ETA: {env_context.get('air_eta', 0)} min
 """
 
-        # Call AI with audio
-        # Using Gemini 3.0 Flash Preview with Thinking Config
+        
+        
         response = client.models.generate_content(
             model="gemini-3-flash-preview",
             contents=[
@@ -395,14 +426,15 @@ def analyze_audio_call(
             )
         )
         
-        # Parse response
+        
         result = json.loads(response.text)
         
-        # Map AI symptoms to triage engine keys
+        
         raw_symptoms = result.get("symptoms", [])
         mapped_symptoms = map_symptoms_to_keys(raw_symptoms)
         
         return {
+            "success": True,
             "voiceStressScore": float(result.get("voiceStressScore", 0.5)),
             "voiceStressIndicators": str(result.get("voiceStressIndicators", "")),
             "transcription": str(result.get("transcription", "")),
@@ -424,7 +456,7 @@ def analyze_audio_call(
     except Exception as e:
         error_msg = f"AI Engine Error: {str(e)}"
         print(error_msg)
-        # Return error info so it can be displayed to user
+        
         return {"error": error_msg, "success": False}
 
 

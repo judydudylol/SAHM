@@ -15,23 +15,23 @@ class Medic:
     """Represents a human medic in the SAHM system"""
     id: str
     name: str
-    specialty: str  # cardiac, trauma, respiratory, general, pediatric
-    certification_level: str  # paramedic, emt_advanced, critical_care
-    gps_location: tuple[float, float]  # (latitude, longitude)
-    status: str  # available, on_mission, off_duty
-    current_load: int  # 0-100, workload percentage
+    specialty: str  
+    certification_level: str  
+    gps_location: tuple[float, float]  
+    status: str  
+    current_load: int  
     missions_completed: int
-    rating: float  # 0.0 - 5.0
-    languages: List[str]  # ["ar", "en", "ur"]
+    rating: float  
+    languages: List[str]  
 
 
 class MedicDatabase:
     """Mock database of available medics (in production: SQL/NoSQL)"""
     
-    # Riyadh GPS coordinates (approximate)
+    
     RIYADH_CENTER = (24.7136, 46.6753)
     
-    # Specialty mapping to medical categories
+    
     SPECIALTY_MAP = {
         "cardiac": ["cardiac", "chest_pain"],
         "trauma": ["trauma_bleeding", "major_injury"],
@@ -62,18 +62,18 @@ class MedicDatabase:
         
         medics = []
         for i, name in enumerate(names):
-            # Deterministic GPS within ~20km of Riyadh center
+            
             lat = self.RIYADH_CENTER[0] + self._rng.uniform(-0.18, 0.18)
             lon = self.RIYADH_CENTER[1] + self._rng.uniform(-0.18, 0.18)
             
-            # Most medics available, some on mission
+            
             status_pool = ["available"] * 7 + ["on_mission"] * 2 + ["off_duty"] * 1
             
             medic = Medic(
                 id=f"MED-{1000 + i}",
                 name=name,
-                specialty=specialties[i % len(specialties)],  # Deterministic specialty
-                certification_level=certifications[i % len(certifications)],  # Deterministic cert
+                specialty=specialties[i % len(specialties)],  
+                certification_level=certifications[i % len(certifications)],  
                 gps_location=(round(lat, 6), round(lon, 6)),
                 status=self._rng.choice(status_pool),
                 current_load=self._rng.randint(0, 80),
@@ -124,11 +124,11 @@ class MedicMatcher:
         lat1, lon1 = loc1
         lat2, lon2 = loc2
         
-        # Simplified distance (good enough for mock)
+        
         lat_diff = abs(lat2 - lat1)
         lon_diff = abs(lon2 - lon1)
         
-        # Rough conversion: 1 degree ≈ 111 km
+        
         distance_km = ((lat_diff ** 2 + lon_diff ** 2) ** 0.5) * 111
         return round(distance_km, 2)
     
@@ -144,10 +144,10 @@ class MedicMatcher:
             Estimated minutes to arrival
         """
         if mode == "aerial":
-            # Aerial speed: ~120 km/h average
+            
             speed_kmh = 120
         else:
-            # Ground speed: ~40 km/h with traffic
+            
             speed_kmh = 40
         
         eta_minutes = (distance_km / speed_kmh) * 60
@@ -162,16 +162,16 @@ class MedicMatcher:
         Score specialty match (0.0 to 1.0).
         1.0 = perfect match, 0.5 = general can handle, 0.0 = mismatch
         """
-        # Perfect match
+        
         if medic_specialty in self.db.SPECIALTY_MAP:
             if case_category in self.db.SPECIALTY_MAP[medic_specialty]:
                 return 1.0
         
-        # General medics can handle anything at reduced score
+        
         if medic_specialty == "general":
             return 0.7
         
-        # Partial match (e.g., cardiac for respiratory)
+        
         return 0.4
     
     def _calculate_match_score(
@@ -196,18 +196,18 @@ class MedicMatcher:
         eta = self._estimate_eta(distance, mode)
         specialty_score = self._calculate_specialty_match(medic.specialty, case_category)
         
-        # Normalize scores to 0-1
-        distance_score = max(0, 1 - (distance / 20))  # 20km max range
+        
+        distance_score = max(0, 1 - (distance / 20))  
         workload_score = 1 - (medic.current_load / 100)
         rating_score = medic.rating / 5.0
         cert_score = {"paramedic": 0.7, "emt_advanced": 0.85, "critical_care": 1.0}[medic.certification_level]
         
-        # Weighted composite score
+        
         composite_score = (
-            distance_score * 0.40 +
-            specialty_score * 0.30 +
-            workload_score * 0.15 +
-            rating_score * 0.10 +
+            distance_score * 0.60 +
+            specialty_score * 0.20 +
+            workload_score * 0.10 +
+            rating_score * 0.05 +
             cert_score * 0.05
         )
         
@@ -248,14 +248,14 @@ class MedicMatcher:
         """
         start_time = time.time()
         
-        # Extract key info
+        
         response_mode = decision_output["response_mode"]
         severity = triage_output["severity_level"]
         category = triage_output["category"]
         
-        # Derive patient location deterministically
+        
         if patient_location is None:
-            # Use scenario_seed for deterministic location, or fallback to fixed default
+            
             seed = scenario_seed if scenario_seed is not None else 1
             loc_rng = random.Random(seed)
             patient_location = (
@@ -263,7 +263,7 @@ class MedicMatcher:
                 self.db.RIYADH_CENTER[1] + loc_rng.uniform(-0.15, 0.15),
             )
         
-        # Only match if aerial or combined deployment
+        
         if response_mode == "ground_only":
             return {
                 "assigned_medic": None,
@@ -271,7 +271,7 @@ class MedicMatcher:
                 "match_time_seconds": round(time.time() - start_time, 3),
             }
         
-        # Get available medics
+        
         available = self.db.get_available_medics()
         
         if not available:
@@ -282,7 +282,7 @@ class MedicMatcher:
                 "status": "error",
             }
         
-        # Calculate match scores
+        
         mode = "aerial" if response_mode in ["aerial_only", "combined"] else "ground"
         scores = []
         
@@ -295,18 +295,18 @@ class MedicMatcher:
                 "score_data": score_data,
             })
         
-        # Sort by composite score (highest first)
+        
         scores.sort(key=lambda x: x["score_data"]["composite_score"], reverse=True)
         
-        # Select best match
+        
         best = scores[0]
         best_medic = best["medic"]
         best_score = best["score_data"]
         
-        # NOTE: Don't update medic status here - it would make matching non-deterministic
-        # In production, this would be handled by a separate dispatch confirmation step
         
-        # Build result
+        
+        
+        
         match_time = round(time.time() - start_time, 3)
         
         return {
@@ -320,7 +320,7 @@ class MedicMatcher:
                 "distance_km": best_score["distance_km"],
                 "eta_minutes": best_score["eta_minutes"],
                 "missions_completed": best_medic.missions_completed,
-                "status": "En Route",  # Assigned medic is now en route
+                "status": "En Route",  
                 "gps_location": best_medic.gps_location,
             },
             "match_score": best_score["composite_score"],
@@ -341,7 +341,7 @@ class MedicMatcher:
                     "status": alt["medic"].status.replace('_', ' ').title(),
                     "gps_location": alt["medic"].gps_location,
                 }
-                for alt in scores[1:4]  # Top 3 alternatives
+                for alt in scores[1:4]  
             ] if len(scores) > 1 else [],
             "all_medics": [
                 {
@@ -361,7 +361,7 @@ class MedicMatcher:
             "status": "success",
         }
 
-# Singleton instance for session consistency
+
 _matcher_instance: Optional[MedicMatcher] = None
 
 def get_matcher() -> MedicMatcher:
@@ -372,7 +372,7 @@ def get_matcher() -> MedicMatcher:
     return _matcher_instance
 
 
-# Convenience function
+
 def assign_medic(
     decision_output: Dict,
     triage_output: Dict,

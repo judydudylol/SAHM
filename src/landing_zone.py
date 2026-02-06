@@ -16,14 +16,14 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Default patient location from D1.md: Al Humaid St, Al Ghadir, Riyadh
+
 DEFAULT_PATIENT_LAT = 24.7745
 DEFAULT_PATIENT_LON = 46.6575
 
-# Earth's mean radius in kilometers
+
 EARTH_RADIUS_KM = 6371.0
 
-# Reasonable bounds for Al Ghadir neighborhood
+
 AL_GHADIR_BOUNDS = {
     "lat_min": 24.76,
     "lat_max": 24.78,
@@ -55,9 +55,9 @@ class LandingZoneResult:
     estimated_flight_time: float = 0.0
 
 
-# =============================================================================
-# DISTANCE CALCULATIONS
-# =============================================================================
+
+
+
 
 def haversine_distance(
     lat1: float,
@@ -91,13 +91,13 @@ def haversine_distance(
         >>> haversine_distance(24.7703, 46.6529, 24.7745, 46.6575)
         0.55
     """
-    # Convert degrees to radians
+    
     lat1_rad = math.radians(lat1)
     lat2_rad = math.radians(lat2)
     dlat = math.radians(lat2 - lat1)
     dlon = math.radians(lon2 - lon1)
     
-    # Haversine formula
+    
     a = (
         math.sin(dlat / 2) ** 2 +
         math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon / 2) ** 2
@@ -144,7 +144,7 @@ def calculate_bearing(
     
     initial_bearing = math.atan2(x, y)
     
-    # Convert from radians to degrees and normalize to 0-360
+    
     bearing = (math.degrees(initial_bearing) + 360) % 360
     
     return bearing
@@ -198,9 +198,9 @@ def bearing_to_cardinal(bearing: float) -> str:
     return directions[index]
 
 
-# =============================================================================
-# LANDING ZONE SELECTION
-# =============================================================================
+
+
+
 
 def find_nearest_zone(
     zones: List[Dict],
@@ -230,7 +230,7 @@ def find_nearest_zone(
         logger.warning("No landing zones provided")
         return None
     
-    # Validate patient coordinates
+    
     if not _validate_coordinates(patient_lat, patient_lon):
         logger.warning(f"Invalid patient coordinates: {patient_lat}, {patient_lon}")
     
@@ -241,18 +241,18 @@ def find_nearest_zone(
         zone_lat = zone.get("latitude", 0)
         zone_lon = zone.get("longitude", 0)
         
-        # Skip invalid zones
+        
         if not _validate_coordinates(zone_lat, zone_lon):
             logger.warning(f"Invalid zone coordinates: {zone.get('name', 'Unknown')}")
             continue
         
-        # Calculate distance
+        
         distance = haversine_distance(patient_lat, patient_lon, zone_lat, zone_lon)
         
         if distance < min_distance:
             min_distance = distance
             
-            # Calculate additional metrics
+            
             bearing = calculate_bearing(patient_lat, patient_lon, zone_lat, zone_lon)
             flight_time = estimate_flight_time(distance)
             
@@ -296,7 +296,7 @@ def get_all_zones_sorted(
         zone_lat = zone.get("latitude", 0)
         zone_lon = zone.get("longitude", 0)
         
-        # Skip invalid zones
+        
         if not _validate_coordinates(zone_lat, zone_lon):
             continue
         
@@ -339,9 +339,9 @@ def get_zones_within_radius(
     return [z for z in all_zones if z.distance_km <= radius_km]
 
 
-# =============================================================================
-# VALIDATION & UTILITIES
-# =============================================================================
+
+
+
 
 def _validate_coordinates(lat: float, lon: float) -> bool:
     """
@@ -354,13 +354,13 @@ def _validate_coordinates(lat: float, lon: float) -> bool:
     Returns:
         True if coordinates are valid
     """
-    # Basic range check
+    
     if not (-90 <= lat <= 90):
         return False
     if not (-180 <= lon <= 180):
         return False
     
-    # Check for placeholder zeros
+    
     if lat == 0 and lon == 0:
         return False
     
@@ -393,9 +393,9 @@ def get_zone_stats(zones: List[Dict]) -> Dict:
     }
 
 
-# =============================================================================
-# TESTING & VALIDATION
-# =============================================================================
+
+
+
 
 if __name__ == "__main__":
     from data_loader import load_landing_zones
@@ -412,7 +412,7 @@ if __name__ == "__main__":
         zones = load_landing_zones()
         print(f"\n✓ Loaded {len(zones)} landing zones")
         
-        # Test 1: Find nearest zone
+        
         print("\n" + "=" * 80)
         print("TEST 1: Find Nearest Zone")
         print("=" * 80)
@@ -429,7 +429,7 @@ if __name__ == "__main__":
         else:
             print("\n✗ No nearest zone found")
         
-        # Test 2: All zones sorted
+        
         print("\n" + "=" * 80)
         print("TEST 2: All Zones Sorted by Distance")
         print("=" * 80)
@@ -442,7 +442,7 @@ if __name__ == "__main__":
             print(f"     Distance: {zone.distance_km} km {direction}")
             print(f"     Flight Time: {zone.estimated_flight_time} min")
         
-        # Test 3: Zones within radius
+        
         print("\n" + "=" * 80)
         print("TEST 3: Zones Within 1 km Radius")
         print("=" * 80)
@@ -452,7 +452,7 @@ if __name__ == "__main__":
         for zone in nearby:
             print(f"  - {zone.name}: {zone.distance_km} km")
         
-        # Test 4: Statistics
+        
         print("\n" + "=" * 80)
         print("TEST 4: Zone Statistics")
         print("=" * 80)
@@ -464,12 +464,12 @@ if __name__ == "__main__":
         print(f"  Farthest: {stats['farthest_distance']:.2f} km")
         print(f"  Average distance: {stats['average_distance']:.2f} km")
         
-        # Test 5: Distance validation
+        
         print("\n" + "=" * 80)
         print("TEST 5: Distance Formula Validation")
         print("=" * 80)
         
-        # Known test case: roughly 0.55 km from patient to Al Ghadir Park
+        
         test_lat, test_lon = 24.7703, 46.6529
         test_distance = haversine_distance(DEFAULT_PATIENT_LAT, DEFAULT_PATIENT_LON, test_lat, test_lon)
         print(f"\nTest distance calculation:")

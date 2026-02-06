@@ -62,11 +62,11 @@ class TriageResult:
     alternatives: List[Tuple[str, float]]
 
 
-# =============================================================================
-# TEXT PROCESSING UTILITIES
-# =============================================================================
 
-# Common medical stopwords that don't help matching
+
+
+
+
 MEDICAL_STOPWORDS = {
     'the', 'a', 'an', 'and', 'or', 'of', 'in', 'on', 'at', 'to', 'for', 
     'with', 'after', 'before', 'is', 'are', 'was', 'were', 'been', 'being',
@@ -74,7 +74,7 @@ MEDICAL_STOPWORDS = {
     'could', 'may', 'might', 'must', 'can', 'be', 'am', 'patient', 'person'
 }
 
-# High-value keywords that indicate specific conditions
+
 CRITICAL_KEYWORDS = {
     'cardiac', 'arrest', 'anaphylaxis', 'stroke', 'seizure', 'unconscious',
     'bleeding', 'choking', 'trauma', 'collapse', 'respiratory', 'asthma',
@@ -104,10 +104,10 @@ def _tokenize(text: str) -> Set[str]:
     if not text:
         return set()
     
-    # Lowercase, remove punctuation, split on whitespace
+    
     clean = re.sub(r'[^\w\s]', ' ', text.lower())
     
-    # Split and remove stopwords
+    
     tokens = set(clean.split()) - MEDICAL_STOPWORDS
     
     return tokens
@@ -164,13 +164,13 @@ def _token_overlap_score(query_tokens: Set[str], case_tokens: Set[str]) -> float
     
     intersection = query_tokens & case_tokens
     
-    # Query coverage: fraction of query terms that matched
+    
     query_coverage = len(intersection) / len(query_tokens) if query_tokens else 0.0
     
-    # Jaccard similarity for balance
+    
     jaccard = _jaccard_similarity(query_tokens, case_tokens)
     
-    # Weighted combination
+    
     score = 0.6 * query_coverage + 0.4 * jaccard
     
     return score
@@ -194,13 +194,13 @@ def _keyword_bonus(query_tokens: Set[str], case_tokens: Set[str]) -> float:
     if not matching_critical:
         return 0.0
     
-    # Bonus based on number of critical keywords matched
+    
     return min(0.2, len(matching_critical) * 0.1)
 
 
-# =============================================================================
-# CATEGORIZATION FUNCTIONS
-# =============================================================================
+
+
+
 
 def categorize(
     case_description: str,
@@ -236,7 +236,7 @@ def categorize(
         logger.warning("Empty categorizer data")
         return None
     
-    # Build combined query from description + symptoms
+    
     query_text = (case_description or "").strip()
     if symptoms:
         query_text += " " + " ".join(symptoms)
@@ -250,7 +250,7 @@ def categorize(
     
     logger.info(f"Categorizing query: '{case_description}' ({len(query_tokens)} tokens)")
     
-    # === STAGE 1: Exact match after normalization ===
+    
     for case in categorizer_data:
         if query_normalized == case.get("case_name_normalized", ""):
             logger.info(f"Exact match found: {case['case_name']}")
@@ -263,7 +263,7 @@ def categorize(
                 alternatives=[]
             )
     
-    # === STAGE 2: Token overlap matching with scoring ===
+    
     scored_matches = []
     
     for case in categorizer_data:
@@ -272,35 +272,35 @@ def categorize(
         case_text = f"{case_name} {case_desc}"
         case_tokens = _tokenize(case_text)
         
-        # Base score from token overlap
+        
         score = _token_overlap_score(query_tokens, case_tokens)
         
-        # Bonus 1: Substring match in normalized case name
+        
         if query_normalized in case.get("case_name_normalized", ""):
             score += 0.3
         elif case.get("case_name_normalized", "") in query_normalized:
             score += 0.25
         
-        # Bonus 2: Category keyword match
+        
         category_tokens = _tokenize(case.get("category", ""))
         if query_tokens & category_tokens:
             score += 0.1
         
-        # Bonus 3: Critical medical keywords
+        
         score += _keyword_bonus(query_tokens, case_tokens)
         
-        # Track matched keywords
+        
         matched_kw = list(query_tokens & case_tokens)
         
-        # Clamp score to [0, 1]
+        
         score = min(1.0, score)
         
         scored_matches.append((case, score, matched_kw))
     
-    # Sort by score descending
+    
     scored_matches.sort(key=lambda x: x[1], reverse=True)
     
-    # Check if best match is good enough
+    
     if not scored_matches or scored_matches[0][1] < 0.1:
         logger.warning(f"No good match found for '{case_description}'")
         return None
@@ -309,17 +309,17 @@ def categorize(
     
     logger.info(f"Best match: {best_case['case_name']} (score: {best_score:.2f})")
     
-    # Get alternatives (top 3 excluding best)
+    
     alternatives = [
         (m[0]["case_name"], round(m[1], 2))
         for m in scored_matches[1:4]
         if m[1] > 0.1
     ]
     
-    # Determine confidence (slightly lower than raw score for safety)
+    
     confidence = min(0.95, best_score)
     
-    # Determine match method based on score
+    
     if best_score >= 0.7:
         match_method = "token_overlap"
     elif best_score >= 0.4:
@@ -417,24 +417,24 @@ def get_all_matches(
         case_text = f"{case.get('case_name', '')} {case.get('description', '')}"
         case_tokens = _tokenize(case_text)
         
-        # Calculate score
+        
         score = _token_overlap_score(query_tokens, case_tokens)
         
-        # Exact match bonus
+        
         if query_normalized == case.get("case_name_normalized", ""):
             score = 1.0
         elif query_normalized in case.get("case_name_normalized", ""):
             score += 0.3
         
-        # Critical keyword bonus
+        
         score += _keyword_bonus(query_tokens, case_tokens)
         
-        # Clamp to [0, 1]
+        
         score = min(1.0, score)
         
         scored.append((case, score))
     
-    # Sort by score descending
+    
     scored.sort(key=lambda x: x[1], reverse=True)
     
     return scored[:top_n]
@@ -505,9 +505,9 @@ def get_cases_by_severity(
     ]
 
 
-# =============================================================================
-# TESTING & VALIDATION
-# =============================================================================
+
+
+
 
 if __name__ == "__main__":
     from data_loader import load_categorizer
@@ -520,7 +520,7 @@ if __name__ == "__main__":
         data = load_categorizer()
         print(f"\n✓ Loaded {len(data)} medical cases from Catergorizer.json")
         
-        # Count by category
+        
         categories = {}
         for case in data:
             cat = case.get("category", "Unknown")
@@ -534,19 +534,19 @@ if __name__ == "__main__":
         print("MATCHING TESTS")
         print("=" * 80)
         
-        # Test cases from actual data files
+        
         test_cases = [
-            # From scenarios.json
+            
             ("Cardiac Arrest", [], 1.0, "exact"),
             ("Severe Anaphylaxis", [], 0.9, "token_overlap"),
             ("COPD Exacerbation", [], 1.0, "exact"),
             
-            # From cases_send_decision.json
+            
             ("Loss of vision + confusion", [], 0.4, "partial"),
             ("Asthma attack collapse", [], 0.7, "token_overlap"),
             ("Stroke-like sudden paralysis", [], 0.6, "partial"),
             
-            # Edge cases
+            
             ("heart stopped", [], 0.5, "partial"),
             ("can't breathe", [], 0.4, "partial"),
         ]
@@ -569,7 +569,7 @@ if __name__ == "__main__":
                 if result.alternatives:
                     print(f"  Alternatives: {result.alternatives[:2]}")
                 
-                # Check if confidence is reasonable
+                
                 if result.confidence >= expected_conf * 0.7:
                     passed += 1
                 else:
@@ -583,7 +583,7 @@ if __name__ == "__main__":
         print(f"RESULTS: {passed} passed, {failed} failed out of {len(test_cases)} tests")
         print("=" * 80)
         
-        # Test multi-match function
+        
         print("\n" + "=" * 80)
         print("TOP MATCHES TEST")
         print("=" * 80)

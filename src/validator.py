@@ -15,7 +15,7 @@ from datetime import datetime
 import logging
 
 from .data_loader import load_scenarios, load_cases
-from .dispatch_engine import dispatch, DispatchResult
+from .dispatch_engine import dispatch, DispatchResult, normalize_mode_for_expected_label
 
 logger = logging.getLogger(__name__)
 
@@ -72,9 +72,9 @@ class ValidationReport:
         return f"{self.matches}/{self.total}"
 
 
-# =============================================================================
-# VALIDATION FUNCTIONS
-# =============================================================================
+
+
+
 
 def validate_scenarios() -> ValidationReport:
     """
@@ -92,7 +92,7 @@ def validate_scenarios() -> ValidationReport:
     results = []
     
     for scenario in scenarios:
-        # Run dispatch with scenario parameters
+        
         result = dispatch(
             weather_risk_pct=scenario["weather_risk_pct"],
             harm_threshold_min=scenario["harm_threshold_min"],
@@ -100,14 +100,15 @@ def validate_scenarios() -> ValidationReport:
             air_eta_min=scenario["air_eta_min"],
         )
         
-        # Compare decisions (both are normalized)
+        
         expected = scenario["expected_decision"]
-        actual = result.response_mode
+        actual = normalize_mode_for_expected_label(result.response_mode)
         match = (expected == actual)
         
-        # Build detailed information
+        
         details = {
             "rule_triggered": result.rule_triggered,
+            "actual_raw_mode": result.response_mode,
             "confidence": result.confidence,
             "weather_risk_pct": scenario["weather_risk_pct"],
             "harm_threshold_min": scenario["harm_threshold_min"],
@@ -159,7 +160,7 @@ def validate_cases() -> ValidationReport:
     results = []
     
     for case in cases:
-        # Run dispatch with case parameters
+        
         result = dispatch(
             weather_risk_pct=case["weather_risk_pct"],
             harm_threshold_min=case["harm_threshold_min"],
@@ -167,14 +168,15 @@ def validate_cases() -> ValidationReport:
             air_eta_min=case["air_eta_min"],
         )
         
-        # Compare decisions (both are normalized)
+        
         expected = case["expected_decision"]
-        actual = result.response_mode
+        actual = normalize_mode_for_expected_label(result.response_mode)
         match = (expected == actual)
         
-        # Build detailed information
+        
         details = {
             "rule_triggered": result.rule_triggered,
+            "actual_raw_mode": result.response_mode,
             "confidence": result.confidence,
             "weather_risk_pct": case["weather_risk_pct"],
             "harm_threshold_min": case["harm_threshold_min"],
@@ -225,9 +227,9 @@ def run_full_validation() -> Tuple[ValidationReport, ValidationReport]:
     return scenarios_report, cases_report
 
 
-# =============================================================================
-# REPORTING & ANALYSIS
-# =============================================================================
+
+
+
 
 def print_validation_report(
     report: ValidationReport,
@@ -250,7 +252,7 @@ def print_validation_report(
     print(f"  ✓ Matches: {report.matches}")
     print(f"  ✗ Mismatches: {report.mismatches}")
     
-    # Show mismatches (always)
+    
     if report.mismatches > 0:
         print(f"\n{'─'*80}")
         print("MISMATCHES:")
@@ -274,7 +276,7 @@ def print_validation_report(
                     print(f"        Harm: {r.details.get('exceeds_harm')}")
                     print(f"        Efficiency: {r.details.get('exceeds_efficiency')}")
     
-    # Show matches (optional)
+    
     if show_matches and report.matches > 0:
         print(f"\n{'─'*80}")
         print("MATCHES:")
@@ -301,25 +303,27 @@ def analyze_mismatches(report: ValidationReport) -> Dict:
     
     mismatches = [r for r in report.results if not r.match]
     
-    # Count by rule that was actually triggered
+    
     rules_used = {}
     for m in mismatches:
         rule = m.details.get('rule_triggered', 'UNKNOWN')
         rules_used[rule] = rules_used.get(rule, 0) + 1
     
-    # Count by expected vs actual decision
+    
     direction_errors = {
         "expected_drone_got_ambulance": 0,
         "expected_ambulance_got_drone": 0,
     }
     
     for m in mismatches:
-        if m.expected == "DOCTOR_DRONE" and m.actual == "AMBULANCE":
+        expected = normalize_mode_for_expected_label(m.expected)
+        actual = normalize_mode_for_expected_label(m.actual)
+        if expected == "DOCTOR_DRONE" and actual == "AMBULANCE":
             direction_errors["expected_drone_got_ambulance"] += 1
-        elif m.expected == "AMBULANCE" and m.actual == "DOCTOR_DRONE":
+        elif expected == "AMBULANCE" and actual == "DOCTOR_DRONE":
             direction_errors["expected_ambulance_got_drone"] += 1
     
-    # Calculate average threshold exceedances for mismatches
+    
     avg_weather = sum(m.details.get('weather_risk_pct', 0) for m in mismatches) / len(mismatches)
     avg_time_delta = sum(m.details.get('time_delta_min', 0) for m in mismatches) / len(mismatches)
     
@@ -402,7 +406,7 @@ def print_combined_summary(
         print("  • Threshold values may need adjustment")
         print("  • Edge cases at decision boundaries")
         
-        # Analyze patterns
+        
         print("\nMismatch Analysis:")
         
         if scenarios_report.mismatches > 0:
@@ -418,9 +422,9 @@ def print_combined_summary(
             print(f"    Direction errors: {analysis.get('direction_errors', {})}")
 
 
-# =============================================================================
-# MAIN EXECUTION
-# =============================================================================
+
+
+
 
 if __name__ == "__main__":
     print("=" * 80)
@@ -430,10 +434,10 @@ if __name__ == "__main__":
     print("D1.md Specification: 3-step rule-based logic")
     
     try:
-        # Run full validation
+        
         scenarios_report, cases_report = run_full_validation()
         
-        # Print individual reports
+        
         print_validation_report(
             scenarios_report,
             show_matches=False,
@@ -446,10 +450,10 @@ if __name__ == "__main__":
             show_details=True
         )
         
-        # Print combined summary
+        
         print_combined_summary(scenarios_report, cases_report)
         
-        # Export if there are any mismatches
+        
         if scenarios_report.mismatches > 0:
             export_report_json(scenarios_report, "scenarios_validation.json")
             print(f"\n📄 Scenarios report exported to scenarios_validation.json")
@@ -458,7 +462,7 @@ if __name__ == "__main__":
             export_report_json(cases_report, "cases_validation.json")
             print(f"📄 Cases report exported to cases_validation.json")
         
-        # Exit code
+        
         total_mismatches = scenarios_report.mismatches + cases_report.mismatches
         if total_mismatches == 0:
             print("\n" + "=" * 80)

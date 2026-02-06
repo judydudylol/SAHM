@@ -7,22 +7,23 @@ Handles multiple input formats and ensures consistent output schema.
 """
 
 import json
+import os
 import re
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
 import logging
 
-# Configure logging
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Base directory for data files
+
 FILES_DIR = Path(__file__).parent.parent / "data"
 
 
-# =============================================================================
-# NORMALIZATION UTILITIES
-# =============================================================================
+
+
+
 
 def normalize_weather_risk(value: Any) -> float:
     """
@@ -55,7 +56,7 @@ def normalize_weather_risk(value: Any) -> float:
     
     try:
         if isinstance(value, str):
-            # Remove % symbol and whitespace
+            
             clean = value.replace('%', '').strip()
             num = float(clean)
         elif isinstance(value, (int, float)):
@@ -64,11 +65,11 @@ def normalize_weather_risk(value: Any) -> float:
             logger.warning(f"Unexpected weather risk type: {type(value)}, defaulting to 0")
             return 0.0
         
-        # Convert fraction to percentage if needed
+        
         if num <= 1.0:
             num *= 100.0
         
-        # Clamp to valid range
+        
         return max(0.0, min(100.0, num))
     
     except (ValueError, TypeError) as e:
@@ -106,12 +107,12 @@ def normalize_decision_label(decision: str) -> str:
     if not decision:
         return "AMBULANCE"
     
-    # Remove all non-alphanumeric except spaces
+    
     clean = re.sub(r'[^\w\s]', '', str(decision)).strip().upper()
-    # Replace spaces with underscores
+    
     clean = re.sub(r'\s+', '_', clean)
     
-    # Check for drone/doctor keywords
+    
     if 'DRONE' in clean or 'DOCTOR' in clean or 'AERIAL' in clean or 'AIR' in clean:
         return "DOCTOR_DRONE"
     else:
@@ -149,23 +150,23 @@ def parse_harm_time(time_str: str) -> Tuple[int, int]:
         logger.warning(f"Invalid harm time input: {time_str}, using default (30, 30)")
         return (30, 30)
     
-    # Remove common unit variations
+    
     clean = time_str.strip()
     clean = re.sub(r'[mM]in(utes?)?', '', clean)
     clean = re.sub(r'\s*[mM]\s*$', '', clean)
     clean = clean.strip()
     
-    # Handle ">" prefix (e.g., ">60")
+    
     clean = clean.lstrip('>')
     
-    # Check for range (e.g., "4-6")
+    
     if '-' in clean:
         parts = clean.split('-')
         try:
             harm_min = int(float(parts[0].strip()))
             harm_max = int(float(parts[1].strip()))
             
-            # Validate range
+            
             if harm_min > harm_max:
                 harm_min, harm_max = harm_max, harm_min
             
@@ -174,10 +175,10 @@ def parse_harm_time(time_str: str) -> Tuple[int, int]:
             logger.warning(f"Failed to parse range '{time_str}': {e}, using default")
             return (30, 30)
     
-    # Single value
+    
     try:
         val = int(float(clean))
-        return (max(1, val), max(1, val))  # Ensure at least 1 minute
+        return (max(1, val), max(1, val))  
     except ValueError as e:
         logger.warning(f"Failed to parse harm time '{time_str}': {e}, using default")
         return (30, 30)
@@ -208,7 +209,7 @@ def normalize_severity_level(severity: str) -> int:
         2
     """
     if not severity:
-        return 2  # Default to High
+        return 2  
     
     severity_map = {
         'critical': 3,
@@ -223,7 +224,7 @@ def normalize_severity_level(severity: str) -> int:
     }
     
     normalized = severity.lower().strip()
-    return severity_map.get(normalized, 2)  # Default to High if unknown
+    return severity_map.get(normalized, 2)  
 
 
 def normalize_case_name(name: str) -> str:
@@ -251,13 +252,13 @@ def normalize_case_name(name: str) -> str:
     if not name:
         return ""
     
-    # Lowercase and trim
+    
     clean = str(name).lower().strip()
     
-    # Remove punctuation except spaces and hyphens
+    
     clean = re.sub(r'[^\w\s-]', '', clean)
     
-    # Collapse whitespace
+    
     clean = re.sub(r'\s+', ' ', clean)
     
     return clean.strip()
@@ -284,9 +285,9 @@ def validate_required_fields(data: Dict[str, Any], required: List[str], context:
     return True
 
 
-# =============================================================================
-# DATA LOADERS
-# =============================================================================
+
+
+
 
 def load_scenarios() -> List[Dict[str, Any]]:
     """
@@ -318,52 +319,52 @@ def load_scenarios() -> List[Dict[str, Any]]:
     normalized = []
     for idx, s in enumerate(raw, 1):
         try:
-            # Parse harm threshold (support both old and new field names)
+            
             harm_val = s.get("harm_threshold_min", s.get("Harm Threshold (min)", 30))
             if isinstance(harm_val, str):
                 harm_min, harm_max = parse_harm_time(harm_val)
             else:
                 harm_min = harm_max = int(harm_val) if harm_val else 30
             
-            # Get weather risk (support both old % and new decimal format)
+            
             weather_raw = s.get("weather_risk_score", s.get("Weather Risk", 0))
             weather_pct = normalize_weather_risk(weather_raw)
             
-            # Get traffic level (support both old % and new decimal format)
+            
             traffic_raw = s.get("traffic_level_score", s.get("Traffic Level", 0))
             traffic_pct = normalize_weather_risk(traffic_raw)
             
             normalized_scenario = {
-                # Identifiers
+                
                 "scenario_id": s.get("scenario_id", s.get("Scenario ID", idx)),
                 
-                # Location & Timing
+                
                 "location": s.get("location", s.get("Location", "Unknown")),
                 "time_of_day": s.get("time_of_day", s.get("Time of Day", "Unknown")),
                 
-                # Emergency Details
+                
                 "emergency_case": s.get("emergency_case", s.get("Emergency Case", "Unknown Emergency")),
                 "severity": s.get("severity", s.get("Severity", "High")),
                 "severity_level": normalize_severity_level(s.get("severity", s.get("Severity", "High"))),
                 
-                # Environmental Factors (normalized to percent)
+                
                 "weather_risk_pct": weather_pct,
                 "traffic_level_pct": traffic_pct / 100 if traffic_pct > 1 else traffic_pct,
                 
-                # Time Parameters
+                
                 "harm_threshold_min": harm_min,
                 "harm_threshold_max": harm_max,
                 "ground_eta_min": float(s.get("ground_time_min", s.get("Ground Time (min)", 20))),
                 "air_eta_min": float(s.get("air_time_min", s.get("Air Time (min)", 3.6))),
                 
-                # Voice Stress Score (0.0-1.0)
+                
                 "voice_stress_score": float(s.get("voice_stress_score", 0.0)),
                 
-                # Expected Decision (normalized)
+                
                 "expected_decision": normalize_decision_label(s.get("ai_decision", s.get("AI Decision", ""))),
                 "rationale": s.get("rationale", s.get("Rationale", "")),
                 
-                # Raw data for debugging
+                
                 "_raw": s,
             }
             
@@ -403,7 +404,7 @@ def load_cases() -> List[Dict[str, Any]]:
     with open(path, 'r', encoding='utf-8') as f:
         raw = json.load(f)
     
-    # Handle nested structure
+    
     if isinstance(raw, dict) and "sheets" in raw:
         sheet = raw.get("sheets", {}).get("Sheet1", [])
     elif isinstance(raw, list):
@@ -414,48 +415,48 @@ def load_cases() -> List[Dict[str, Any]]:
     normalized = []
     for idx, c in enumerate(sheet, 1):
         try:
-            # Parse harm threshold (support both old and new field names)
+            
             harm_val = c.get("harm_threshold_min", c.get("Harm Limit (Min)", 30))
             if isinstance(harm_val, str):
                 harm_min, harm_max = parse_harm_time(harm_val)
             else:
                 harm_min = harm_max = int(harm_val) if harm_val else 30
             
-            # Get weather risk (support both old % and new decimal format)
+            
             weather_raw = c.get("weather_risk_score", c.get("Weather Risk", 0))
             weather_pct = normalize_weather_risk(weather_raw)
             
-            # Get traffic flow (support both old and new field names)
+            
             traffic_raw = c.get("traffic_flow_score", c.get("Traffic Flow", 0.5))
             traffic_flow = float(traffic_raw) if traffic_raw else 0.5
             
             normalized_case = {
-                # Identifiers
+                
                 "case_id": idx,
                 "case_name": c.get("case_name", c.get("Case", "Unknown Case")),
                 
-                # Medical Classification
+                
                 "severity": c.get("severity", c.get("Severity", "High")),
                 "severity_level": normalize_severity_level(c.get("severity", c.get("Severity", "High"))),
                 
-                # Environmental Factors (normalized)
+                
                 "weather_risk_pct": weather_pct,
                 "traffic_flow": traffic_flow,
                 
-                # Time Parameters
+                
                 "harm_threshold_min": harm_min,
                 "harm_threshold_max": harm_max,
                 "ground_eta_min": float(c.get("ground_eta_min", c.get("Ground ETA", 20))),
                 "air_eta_min": float(c.get("air_eta_min", c.get("Air ETA", 3.6))),
                 
-                # Voice Stress Score (0.0-1.0)
+                
                 "voice_stress_score": float(c.get("voice_stress_score", 0.0)),
                 
-                # Expected Decision (normalized)
+                
                 "expected_decision": normalize_decision_label(c.get("ai_dispatch_prediction", c.get("AI Dispatch", ""))),
                 "reasoning": c.get("reasoning", c.get("Reasoning", "")),
                 
-                # Raw data for debugging
+                
                 "_raw": c,
             }
             
@@ -472,10 +473,10 @@ def load_cases() -> List[Dict[str, Any]]:
 
 def load_landing_zones() -> List[Dict[str, Any]]:
     """
-    Load and normalize Al_Ghadir_Landing_Zones.json.
+    Load and normalize landing zones data.
     
     Expected Structure:
-    - Nested: {"sheets": {"Al Ghadir Landing Zones": [...]}}
+    - Nested: {"sheets": {"<sheet name>": [...]}}
     - List of zone objects with Place Name, coordinates, etc.
     
     Returns:
@@ -484,7 +485,12 @@ def load_landing_zones() -> List[Dict[str, Any]]:
     Raises:
         FileNotFoundError: If landing zones file not found
     """
-    path = FILES_DIR / "Al_Ghadir_Landing_Zones.json"
+    configured_file = os.getenv("LANDING_ZONES_FILE", "").strip()
+    if configured_file:
+        candidate = Path(configured_file)
+        path = candidate if candidate.is_absolute() else (FILES_DIR / candidate)
+    else:
+        path = FILES_DIR / "Al_Ghadir_Landing_Zones.json"
     
     if not path.exists():
         raise FileNotFoundError(f"Landing zones file not found: {path}")
@@ -494,9 +500,17 @@ def load_landing_zones() -> List[Dict[str, Any]]:
     with open(path, 'r', encoding='utf-8') as f:
         raw = json.load(f)
     
-    # Handle nested structure
+    
     if isinstance(raw, dict) and "sheets" in raw:
-        sheet = raw.get("sheets", {}).get("Al Ghadir Landing Zones", [])
+        sheets = raw.get("sheets", {})
+        configured_sheet = os.getenv("LANDING_ZONES_SHEET", "").strip()
+        if configured_sheet and configured_sheet in sheets:
+            sheet = sheets.get(configured_sheet, [])
+        elif "Al Ghadir Landing Zones" in sheets:
+            sheet = sheets.get("Al Ghadir Landing Zones", [])
+        else:
+            first_sheet_name = next(iter(sheets), None)
+            sheet = sheets.get(first_sheet_name, []) if first_sheet_name else []
     elif isinstance(raw, list):
         sheet = raw
     else:
@@ -514,7 +528,7 @@ def load_landing_zones() -> List[Dict[str, Any]]:
                 "_raw": z,
             }
             
-            # Validate coordinates
+            
             if not (-90 <= normalized_zone["latitude"] <= 90):
                 logger.warning(f"Invalid latitude for {normalized_zone['name']}: {normalized_zone['latitude']}")
             if not (-180 <= normalized_zone["longitude"] <= 180):
@@ -560,7 +574,7 @@ def load_categorizer() -> List[Dict[str, Any]]:
     normalized = []
     for c in raw:
         try:
-            # Parse harm time range
+            
             harm_min, harm_max = parse_harm_time(c.get("time_to_irreversible_harm", "30 m"))
             
             normalized_case = {
@@ -570,21 +584,21 @@ def load_categorizer() -> List[Dict[str, Any]]:
                 "category": c.get("category", "Unknown"),
                 "description": c.get("description", ""),
                 
-                # Medical Classification
+                
                 "severity": c.get("severity", "High"),
                 "severity_level": normalize_severity_level(c.get("severity", "High")),
-                "ctas": c.get("ctas", 2),  # Canadian Triage and Acuity Scale
+                "ctas": c.get("ctas", 2),  
                 
-                # Harm Threshold
+                
                 "harm_threshold_min": harm_min,
                 "harm_threshold_max": harm_max,
                 "harm_threshold_raw": c.get("time_to_irreversible_harm", ""),
                 
-                # Clinical Information
+                
                 "intervention": c.get("intervention_first_5m", ""),
                 "equipment": c.get("required_core_equipments", ""),
                 
-                # Raw data for debugging
+                
                 "_raw": c,
             }
             
@@ -628,16 +642,16 @@ def load_all() -> Dict[str, List[Dict[str, Any]]]:
     return data
 
 
-# =============================================================================
-# MAIN (for testing)
-# =============================================================================
+
+
+
 
 if __name__ == "__main__":
     print("=" * 80)
     print("SAHM Data Loader - Validation & Testing")
     print("=" * 80)
     
-    # Test normalization functions
+    
     print("\n1. Weather Risk Normalization Tests:")
     test_cases = [
         ("'10%'", "10%", 10.0),

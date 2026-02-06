@@ -8,7 +8,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from src.triage_engine import triage
 
-# Test cases with expected outputs
+
 TEST_CASES = [
     {
         "id": "case_01",
@@ -66,8 +66,8 @@ TEST_CASES = [
         },
         "expected": {
             "category": "respiratory",
-            "severity_level": 2,  # 4 + 2 = 6 points → Level 3, but non-crushing so depends on symptom choice
-            "escalate_human": False,  # May vary based on exact scoring
+            "severity_level": 2,  
+            "escalate_human": False,  
         },
     },
     {
@@ -81,7 +81,7 @@ TEST_CASES = [
         },
         "expected": {
             "category": "infection_fever",
-            "severity_level": 2,  # 2 + 1 = 3 points → Level 2
+            "severity_level": 2,  
             "escalate_human": False,
         },
     },
@@ -96,7 +96,7 @@ TEST_CASES = [
         },
         "expected": {
             "category": "other_unclear",
-            "severity_level": 1,  # 1 + 1 = 2 points → Level 1
+            "severity_level": 1,  
             "escalate_human": False,
         },
     },
@@ -126,7 +126,7 @@ TEST_CASES = [
         },
         "expected": {
             "category": "gi_dehydration",
-            "severity_level": 3,  # 2 + 2 + 1 (voice) = 5 points → Level 3
+            "severity_level": 3,  
             "escalate_human": True,
         },
     },
@@ -156,7 +156,7 @@ TEST_CASES = [
         },
         "expected": {
             "category": "trauma_bleeding",
-            "severity_level": 2,  # 3 points → Level 2
+            "severity_level": 2,  
             "escalate_human": False,
         },
     },
@@ -185,8 +185,8 @@ TEST_CASES = [
             "voice_stress_score": 0.75,
         },
         "expected": {
-            "category": "mental_health",  # Could be cardiac depending on priority
-            "severity_level": 2,  # 1 + 2 = 3 points → Level 2
+            "category": "mental_health",  
+            "severity_level": 2,  
             "escalate_human": False,
         },
     },
@@ -201,7 +201,7 @@ TEST_CASES = [
         },
         "expected": {
             "category": "infection_fever",
-            "severity_level": 1,  # 2 points → Level 1
+            "severity_level": 1,  
             "escalate_human": False,
         },
     },
@@ -216,8 +216,8 @@ TEST_CASES = [
         },
         "expected": {
             "category": "trauma_bleeding",
-            "severity_level": 2,  # 3 + 3 = 6 → Level 3 actually
-            "escalate_human": False,  # Will likely escalate due to score
+            "severity_level": 2,  
+            "escalate_human": False,  
         },
     },
     {
@@ -231,7 +231,7 @@ TEST_CASES = [
         },
         "expected": {
             "category": "allergic",
-            "severity_level": 1,  # 1 point → Level 1
+            "severity_level": 1,  
             "escalate_human": False,
         },
     },
@@ -248,10 +248,10 @@ def run_test(case: dict, verbose: bool = True) -> dict:
     inputs = case["inputs"]
     expected = case["expected"]
     
-    # Run triage
+    
     result = triage(**inputs)
     
-    # Compare key fields
+    
     passed = (
         result["category"] == expected["category"] and
         result["severity_level"] == expected["severity_level"] and
@@ -299,7 +299,7 @@ def run_all_tests(verbose: bool = True) -> dict:
         result = run_test(case, verbose=verbose)
         results.append(result)
     
-    # Calculate statistics
+    
     total = len(results)
     passed = sum(1 for r in results if r["passed"])
     failed = total - passed
@@ -332,9 +332,9 @@ def run_all_tests(verbose: bool = True) -> dict:
 
 
 if __name__ == "__main__":
-    # Run test suite
+    
     summary = run_all_tests(verbose=True)
     
-    # Exit with error code if tests failed
+    
     import sys
     sys.exit(0 if summary["failed"] == 0 else 1)

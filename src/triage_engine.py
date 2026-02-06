@@ -5,7 +5,7 @@ Implements explicit point-based system matching flowchart logic.
 
 from typing import Optional
 
-# RED FLAGS: Immediate Level 3 escalation
+
 RED_FLAGS = {
     "trouble_breathing",
     "choking",
@@ -23,9 +23,9 @@ RED_FLAGS = {
     "severe_allergy_swelling",
 }
 
-# SYMPTOM POINT VALUES: Explicit scoring system
+
 SYMPTOM_POINTS = {
-    # 5-point symptoms (critical)
+    
     "unconscious": 5,
     "not_responding": 5,
     "fainting": 5,
@@ -38,7 +38,7 @@ SYMPTOM_POINTS = {
     "severe_allergy_swelling": 5,
     "anaphylaxis_signs": 5,
     
-    # 4-point symptoms (urgent)
+    
     "trouble_breathing": 4,
     "shortness_of_breath": 4,
     "chest_pain": 4,
@@ -46,14 +46,14 @@ SYMPTOM_POINTS = {
     "choking": 4,
     "turning_blue": 4,
     
-    # 3-point symptoms (concerning)
+    
     "moderate_bleeding": 3,
     "seizure_now": 3,
     "major_trauma": 3,
     "head_injury": 3,
     "confusion": 3,
     
-    # 2-point symptoms (moderate)
+    
     "high_fever": 2,
     "fever": 2,
     "vomiting_severe": 2,
@@ -62,7 +62,7 @@ SYMPTOM_POINTS = {
     "palpitations": 2,
     "wheezing": 2,
     
-    # 1-point symptoms (mild)
+    
     "mild_pain": 1,
     "headache": 1,
     "rash": 1,
@@ -75,7 +75,7 @@ SYMPTOM_POINTS = {
     "swelling_face_lips": 1,
 }
 
-# CATEGORY RULES: Maps symptoms to medical categories
+
 CATEGORY_RULES = {
     "trauma_bleeding": {
         "severe_bleeding", "heavy_bleeding", "moderate_bleeding",
@@ -109,7 +109,7 @@ CATEGORY_RULES = {
     },
 }
 
-# CATEGORY PRIORITY: In case of multiple matches, pick highest priority
+
 PRIORITY = [
     "trauma_bleeding",
     "cardiac",
@@ -121,7 +121,7 @@ PRIORITY = [
     "mental_health",
 ]
 
-# FOLLOW-UP QUESTIONS: Asked when Level 0 (insufficient info)
+
 FOLLOWUP_QUESTIONS = [
     "What is the main symptom?",
     "How long has it been happening?",
@@ -144,7 +144,7 @@ def pick_category(symptoms: set[str]) -> str:
     if not hits:
         return "other_unclear"
     
-    # Return highest priority match
+    
     for cat in PRIORITY:
         if cat in hits:
             return cat
@@ -200,21 +200,21 @@ def compute_severity(
     Returns:
         (severity_level, escalate_flag)
     """
-    # Fast path: red flag detected
+    
     if symptoms & RED_FLAGS:
         return 3, True
     
-    # Calculate base symptom score
+    
     score = calculate_symptom_score(symptoms)
     
-    # Add voice stress bonus (only if symptoms present)
+    
     if score > 0 and voice_stress_score is not None and voice_stress_score >= 0.80:
         score += 1
     
-    # Map to severity level
+    
     severity = map_score_to_severity(score)
     
-    # Escalate if Level 3
+    
     escalate = (severity == 3)
     
     return severity, escalate
@@ -246,7 +246,7 @@ def triage(
     """
     sym = set(symptoms)
     
-    # Level 0: Insufficient information
+    
     if not sym and not (free_text or "").strip():
         return {
             "category": "other_unclear",
@@ -263,19 +263,19 @@ def triage(
             },
         }
     
-    # Assign category
+    
     category = pick_category(sym)
     
-    # Calculate severity and escalation
+    
     severity, escalate = compute_severity(sym, voice_stress_score)
     
-    # Calculate score breakdown for transparency
+    
     base_score = calculate_symptom_score(sym)
     voice_bonus = 1 if (base_score > 0 and voice_stress_score is not None and voice_stress_score >= 0.80) else 0
     total_score = base_score + voice_bonus
     red_flag = bool(sym & RED_FLAGS)
     
-    # Confidence heuristic
+    
     if severity == 0:
         confidence = 0.0
     elif red_flag or severity == 3:

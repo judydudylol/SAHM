@@ -8,16 +8,16 @@ Implements the exact 3-step logic from D1.md:
 3. Efficiency Optimization: Time delta check
 4. Default: Ground ambulance
 
-Returns: DOCTOR_DRONE or AMBULANCE
+Returns: DOCTOR_DRONE, AMBULANCE, or BOTH
 """
 
 from dataclasses import dataclass
 from typing import List, Literal
 
-# Response mode types (matching D1.md + BOTH for parallel dispatch)
+
 ResponseMode = Literal["DOCTOR_DRONE", "AMBULANCE", "BOTH"]
 
-# Rule types for tracking which rule triggered
+
 RuleType = Literal[
     "SAFETY_FILTER",
     "EMERGENCY_OVERRIDE", 
@@ -32,7 +32,7 @@ class DispatchResult:
     Result of dispatch decision.
     
     Attributes:
-        response_mode: DOCTOR_DRONE or AMBULANCE
+        response_mode: DOCTOR_DRONE, AMBULANCE, or BOTH
         rule_triggered: Which rule made the decision
         reasons: List of human-readable reasoning
         weather_risk_pct: Input weather risk
@@ -49,29 +49,47 @@ class DispatchResult:
     rule_triggered: RuleType
     reasons: List[str]
     
-    # Input values (for reference)
+    
     weather_risk_pct: float
     harm_threshold_min: float
     ground_eta_min: float
     air_eta_min: float
     
-    # Computed values
+    
     time_delta_min: float
     exceeds_weather: bool
     exceeds_harm: bool
     exceeds_efficiency: bool
     
-    # Confidence score
+    
     confidence: float = 1.0
 
 
-# =============================================================================
-# DECISION THRESHOLDS (from D1.md specification)
-# =============================================================================
 
-WEATHER_RISK_THRESHOLD = 35.0  # Percent - drones unsafe above this
-HARM_THRESHOLD_CRITICAL = True  # Ground ETA must not exceed harm threshold
-EFFICIENCY_TIME_DELTA = 10.0   # Minutes - significant time savings threshold
+
+
+
+WEATHER_RISK_THRESHOLD = 35.0
+HARM_THRESHOLD_CRITICAL = True
+EFFICIENCY_TIME_DELTA = 10.0
+
+# Datasets often encode any aerial response as DOCTOR_DRONE, while the runtime
+# engine can distinguish combined dispatch as BOTH.
+AIR_RESPONSE_MODES = {"DOCTOR_DRONE", "BOTH"}
+
+
+def is_air_response_mode(mode: str) -> bool:
+    """
+    Return True when mode includes aerial medic deployment.
+    """
+    return str(mode).upper() in AIR_RESPONSE_MODES
+
+
+def normalize_mode_for_expected_label(mode: str) -> str:
+    """
+    Normalize runtime mode to dataset label space used by validation fixtures.
+    """
+    return "DOCTOR_DRONE" if is_air_response_mode(mode) else "AMBULANCE"
 
 
 def dispatch(
@@ -90,11 +108,11 @@ def dispatch(
        (Drone operations unsafe)
     
     2. EMERGENCY_OVERRIDE:
-       If ground_eta > harm_threshold → DOCTOR_DRONE
+       If ground_eta > harm_threshold → BOTH
        (Patient survival requires fastest response)
     
     3. EFFICIENCY_OPTIMIZATION:
-       If (ground_eta - air_eta) > 10 min → DOCTOR_DRONE
+       If (ground_eta - air_eta) > 10 min → BOTH
        (Significant time savings justify drone deployment)
     
     4. DEFAULT:
@@ -121,32 +139,32 @@ def dispatch(
         >>> # Ground too slow for critical case
         >>> result = dispatch(14.0, 4, 29.8, 3.6)
         >>> result.response_mode
-        'DOCTOR_DRONE'
+        'BOTH'
         >>> result.rule_triggered
         'EMERGENCY_OVERRIDE'
         
         >>> # Significant time savings
         >>> result = dispatch(6.0, 15, 29.8, 3.6)
         >>> result.response_mode
-        'DOCTOR_DRONE'
+        'BOTH'
         >>> result.rule_triggered
         'EFFICIENCY_OPTIMIZATION'
     """
-    # Calculate time delta
+    
     time_delta = ground_eta_min - air_eta_min
     
-    # Check thresholds
+    
     exceeds_weather = weather_risk_pct > WEATHER_RISK_THRESHOLD
     exceeds_harm = ground_eta_min > harm_threshold_min
     exceeds_efficiency = time_delta > EFFICIENCY_TIME_DELTA
     
-    # Decision variables
+    
     mode: ResponseMode
     rule: RuleType
     reasons: List[str] = []
     confidence: float
     
-    # RULE 1: SAFETY_FILTER (highest priority)
+    
     if exceeds_weather:
         mode = "AMBULANCE"
         rule = "SAFETY_FILTER"
@@ -154,7 +172,7 @@ def dispatch(
         reasons.append("Drone operations unsafe - defaulting to ground ambulance")
         confidence = 1.0
     
-    # RULE 2: EMERGENCY_OVERRIDE (survival priority)
+    
     elif exceeds_harm:
         mode = "BOTH"
         rule = "EMERGENCY_OVERRIDE"
@@ -163,7 +181,7 @@ def dispatch(
         reasons.append(f"Drone arrival: {air_eta_min:.1f} min (saves {time_delta:.1f} min)")
         confidence = 0.98
     
-    # RULE 3: EFFICIENCY_OPTIMIZATION (significant time savings)
+    
     elif exceeds_efficiency:
         mode = "BOTH"
         rule = "EFFICIENCY_OPTIMIZATION"
@@ -172,7 +190,7 @@ def dispatch(
         reasons.append("Dispatching Drone for immediate aid + Ambulance for transport")
         confidence = 0.90
     
-    # RULE 4: DEFAULT (ground ambulance sufficient)
+    
     else:
         mode = "AMBULANCE"
         rule = "DEFAULT"
@@ -212,26 +230,26 @@ def validate_inputs(
     """
     warnings = []
     
-    # Weather risk should be 0-100
+    
     if not (0 <= weather_risk_pct <= 100):
         warnings.append(f"Weather risk {weather_risk_pct}% outside valid range (0-100%)")
     
-    # Harm threshold should be positive
+    
     if harm_threshold_min <= 0:
         warnings.append(f"Harm threshold {harm_threshold_min} min must be positive")
     
-    # ETAs should be positive
+    
     if ground_eta_min <= 0:
         warnings.append(f"Ground ETA {ground_eta_min} min must be positive")
     
     if air_eta_min <= 0:
         warnings.append(f"Air ETA {air_eta_min} min must be positive")
     
-    # Air should generally be faster than ground
+    
     if air_eta_min > ground_eta_min:
         warnings.append(f"Air ETA ({air_eta_min} min) slower than ground ({ground_eta_min} min) - unusual")
     
-    # Reasonable bounds
+    
     if ground_eta_min > 120:
         warnings.append(f"Ground ETA {ground_eta_min} min seems unreasonably high")
     
@@ -241,9 +259,9 @@ def validate_inputs(
     return warnings
 
 
-# =============================================================================
-# TESTING & VALIDATION
-# =============================================================================
+
+
+
 
 def test_dispatch_logic():
     """Test all decision rules with example cases."""
@@ -280,13 +298,13 @@ def test_dispatch_logic():
         {
             "name": "Edge case: Exactly at weather threshold",
             "inputs": {"weather_risk_pct": 35.0, "harm_threshold_min": 10, "ground_eta_min": 15.0, "air_eta_min": 3.6},
-            "expected_mode": "DOCTOR_DRONE",  # Not exceeding, so check other rules
+            "expected_mode": "DOCTOR_DRONE",  
             "expected_rule": "EFFICIENCY_OPTIMIZATION",
         },
         {
             "name": "Edge case: Exactly at efficiency threshold",
             "inputs": {"weather_risk_pct": 5.0, "harm_threshold_min": 20, "ground_eta_min": 13.6, "air_eta_min": 3.6},
-            "expected_mode": "AMBULANCE",  # Exactly 10 min, not exceeding
+            "expected_mode": "AMBULANCE",  
             "expected_rule": "DEFAULT",
         },
     ]
@@ -300,7 +318,7 @@ def test_dispatch_logic():
         
         result = dispatch(**test['inputs'])
         
-        # Check expectations
+        
         mode_match = result.response_mode == test['expected_mode']
         rule_match = result.rule_triggered == test['expected_rule']
         
@@ -330,10 +348,10 @@ def test_dispatch_logic():
 
 
 if __name__ == "__main__":
-    # Run test suite
+    
     all_passed = test_dispatch_logic()
     
-    # Example usage
+    
     print("\n" + "=" * 80)
     print("EXAMPLE USAGE")
     print("=" * 80)
@@ -353,7 +371,7 @@ if __name__ == "__main__":
     for reason in result.reasons:
         print(f"    {reason}")
     
-    # Validate inputs
+    
     print("\n" + "=" * 80)
     print("INPUT VALIDATION EXAMPLE")
     print("=" * 80)
